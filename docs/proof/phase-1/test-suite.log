@@ -1,3 +1,7 @@
+# Python 3.13.18 (Windows)
+$env:PYTHONPATH="tests;."; $env:PYTHONUTF8="1"
+# Use the project venv with its Scripts directory on PATH and python3.exe available.
+python -m unittest discover -s tests -v
 test_input_output_path_collision_exit_2 (test_contract_and_cli.CliFlagsAndExitCodes.test_input_output_path_collision_exit_2) ... ok
 test_invalid_cli_flags_exit_2_without_creating_out (test_contract_and_cli.CliFlagsAndExitCodes.test_invalid_cli_flags_exit_2_without_creating_out) ... ok
 test_signed_negative_seed_accepted (test_contract_and_cli.CliFlagsAndExitCodes.test_signed_negative_seed_accepted) ... ok
@@ -37,9 +41,9 @@ test_dive_and_surface_events_across_surface_depth (test_gather_p1.GatherLat1Oxyg
 test_faint_drops_hold_lifo_and_writes_empty_inventory (test_gather_p1.GatherLat1OxygenChokeFaint.test_faint_drops_hold_lifo_and_writes_empty_inventory) ... ok
 test_oxygen_drain_refill_and_empty_and_choke_at_t_plus_59 (test_gather_p1.GatherLat1OxygenChokeFaint.test_oxygen_drain_refill_and_empty_and_choke_at_t_plus_59) ... ok
 test_surface_on_exact_choke_tick_prevents_choke_and_refills (test_gather_p1.GatherLat1OxygenChokeFaint.test_surface_on_exact_choke_tick_prevents_choke_and_refills) ... ok
-test_catch_underwater_yield_cooldown_and_hold_full (test_gather_p1.GatherLat2NodesCatchDock.test_catch_underwater_yield_cooldown_and_hold_full) ... FAIL
+test_catch_underwater_yield_cooldown_and_hold_full (test_gather_p1.GatherLat2NodesCatchDock.test_catch_underwater_yield_cooldown_and_hold_full) ... ok
 test_dock_has_priority_over_node_even_at_exact_boundary (test_gather_p1.GatherLat2NodesCatchDock.test_dock_has_priority_over_node_even_at_exact_boundary) ... ok
-test_gather_hold_full_schema (test_gather_p1.GatherLat2NodesCatchDock.test_gather_hold_full_schema) ... FAIL
+test_gather_hold_full_schema (test_gather_p1.GatherLat2NodesCatchDock.test_gather_hold_full_schema) ... ok
 test_gather_surface_only_nearest_tiebreak_id_and_regrow (test_gather_p1.GatherLat2NodesCatchDock.test_gather_surface_only_nearest_tiebreak_id_and_regrow) ... ok
 test_inventory_large_qty_beyond_hold_capacity_allowed_in_quan (test_inventory_and_smoke.InventoryContractAndSmoke.test_inventory_large_qty_beyond_hold_capacity_allowed_in_quan) ... ok
 test_inventory_rejects_bad_schemas_with_exit_2 (test_inventory_and_smoke.InventoryContractAndSmoke.test_inventory_rejects_bad_schemas_with_exit_2) ... ok
@@ -59,6 +63,7 @@ test_live_inputs_keep_fast_tap_edge (test_python_starter_units.Units.test_live_i
 test_quan_fixture_reserves_and_releases_at_closing (test_python_starter_units.Units.test_quan_fixture_reserves_and_releases_at_closing) ... ok
 test_quan_no_dish_at_scheduled_tick (test_python_starter_units.Units.test_quan_no_dish_at_scheduled_tick) ... ok
 test_session_steps_gather_and_dock (test_python_starter_units.Units.test_session_steps_gather_and_dock) ... ok
+test_cook_breaks_order_tick_tie_by_table_id (test_quan_lat4.Lat4.test_cook_breaks_order_tick_tie_by_table_id) ... ok
 test_cook_takes_oldest_reserved_and_consumes_stock (test_quan_lat4.Lat4.test_cook_takes_oldest_reserved_and_consumes_stock) ... ok
 test_customer_left_cancels_dish_on_stove (test_quan_lat4.Lat4.test_customer_left_cancels_dish_on_stove) ... ok
 test_dish_ready_exactly_after_cook_ticks (test_quan_lat4.Lat4.test_dish_ready_exactly_after_cook_ticks) ... ok
@@ -69,15 +74,15 @@ test_reputation_clamped_at_max (test_quan_lat4.Lat4.test_reputation_clamped_at_m
 test_serve_with_tip_then_pay (test_quan_lat4.Lat4.test_serve_with_tip_then_pay) ... ok
 test_serve_wrong_customer_does_nothing (test_quan_lat4.Lat4.test_serve_wrong_customer_does_nothing) ... ok
 test_stove_idle_without_order_does_nothing (test_quan_lat4.Lat4.test_stove_idle_without_order_does_nothing) ... ok
-test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock (test_quan_p1.QuanLat3CustomersAndReservation.test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock) ... FAIL
+test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock (test_quan_p1.QuanLat3CustomersAndReservation.test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock) ... ok
 test_inventory_exceeded_by_scenario_reserved_exits_2 (test_quan_p1.QuanLat3CustomersAndReservation.test_inventory_exceeded_by_scenario_reserved_exits_2) ... ok
-test_no_dish_when_available_stock_insufficient (test_quan_p1.QuanLat3CustomersAndReservation.test_no_dish_when_available_stock_insufficient) ... FAIL
-test_waiting_customer_leaves_on_zero_patience_and_drops_reputation (test_quan_p1.QuanLat3CustomersAndReservation.test_waiting_customer_leaves_on_zero_patience_and_drops_reputation) ... FAIL
-test_closing_pays_eating_just_served_clears_stoves_and_no_spawn (test_quan_p1.QuanLat4CookServePayClose.test_closing_pays_eating_just_served_clears_stoves_and_no_spawn) ... FAIL
-test_full_cook_pick_serve_pay_with_tip_and_reputation (test_quan_p1.QuanLat4CookServePayClose.test_full_cook_pick_serve_pay_with_tip_and_reputation) ... FAIL
+test_no_dish_when_available_stock_insufficient (test_quan_p1.QuanLat3CustomersAndReservation.test_no_dish_when_available_stock_insufficient) ... ok
+test_waiting_customer_leaves_on_zero_patience_and_drops_reputation (test_quan_p1.QuanLat3CustomersAndReservation.test_waiting_customer_leaves_on_zero_patience_and_drops_reputation) ... ok
+test_closing_pays_eating_just_served_clears_stoves_and_no_spawn (test_quan_p1.QuanLat4CookServePayClose.test_closing_pays_eating_just_served_clears_stoves_and_no_spawn) ... ok
+test_full_cook_pick_serve_pay_with_tip_and_reputation (test_quan_p1.QuanLat4CookServePayClose.test_full_cook_pick_serve_pay_with_tip_and_reputation) ... ok
 test_interact_prefers_stove_on_tie_and_does_not_fallback_to_table (test_quan_p1.QuanLat4CookServePayClose.test_interact_prefers_stove_on_tie_and_does_not_fallback_to_table) ... ok
 test_ready_ticks_starts_at_zero_and_never_burns (test_quan_p1.QuanLat4CookServePayClose.test_ready_ticks_starts_at_zero_and_never_burns) ... ok
-test_serve_on_exact_zero_patience_tick_still_valid (test_quan_p1.QuanLat4CookServePayClose.test_serve_on_exact_zero_patience_tick_still_valid) ... FAIL
+test_serve_on_exact_zero_patience_tick_still_valid (test_quan_p1.QuanLat4CookServePayClose.test_serve_on_exact_zero_patience_tick_still_valid) ... ok
 test_invalid_inputs_rejected_with_exit_2 (test_scenario_and_inputs.InputsContract.test_invalid_inputs_rejected_with_exit_2) ... ok
 test_missing_inputs_acts_as_standing_still (test_scenario_and_inputs.InputsContract.test_missing_inputs_acts_as_standing_still) ... ok
 test_wrong_phase_button_ignored_cleanly (test_scenario_and_inputs.InputsContract.test_wrong_phase_button_ignored_cleanly) ... ok
@@ -114,98 +119,7 @@ test_template_is_rejected (test_team_check.TeamCheck.test_template_is_rejected) 
 test_too_few_members (test_team_check.TeamCheck.test_too_few_members) ... ok
 test_wrong_size_duplicate_and_outsider (test_team_check.TeamCheck.test_wrong_size_duplicate_and_outsider) ... ok
 
-======================================================================
-FAIL: test_catch_underwater_yield_cooldown_and_hold_full (test_gather_p1.GatherLat2NodesCatchDock.test_catch_underwater_yield_cooldown_and_hold_full)
 ----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_gather_p1.py", line 250, in test_catch_underwater_yield_cooldown_and_hold_full
-    self.assertEqual(hf[0]["data"], {"action": "catch", "fish_id": "F1", "required": 3, "free": 2})
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: {'required': 3, 'free': 2} != {'action': 'catch', 'fish_id': 'F1', 'required': 3, 'free': 2}
-- {'free': 2, 'required': 3}
-+ {'action': 'catch', 'fish_id': 'F1', 'free': 2, 'required': 3}
+Ran 110 tests in 13.211s
 
-======================================================================
-FAIL: test_gather_hold_full_schema (test_gather_p1.GatherLat2NodesCatchDock.test_gather_hold_full_schema)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_gather_p1.py", line 216, in test_gather_hold_full_schema
-    self.assertEqual(hf[0]["data"], {"action": "gather", "node_id": "N1", "required": 1, "free": 0})
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: {'required': 1, 'free': 0} != {'action': 'gather', 'node_id': 'N1', 'required': 1, 'free': 0}
-- {'free': 0, 'required': 1}
-+ {'action': 'gather', 'free': 0, 'node_id': 'N1', 'required': 1}
-
-======================================================================
-FAIL: test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock (test_quan_p1.QuanLat3CustomersAndReservation.test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 34, in test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock
-    self.assertIn("order_id", arr[0]["data"])
-    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: 'order_id' not found in {'customer_id': 'C1', 'table_id': 'T1', 'dish_id': 'ca_loc_nuong_trui'}
-
-======================================================================
-FAIL: test_no_dish_when_available_stock_insufficient (test_quan_p1.QuanLat3CustomersAndReservation.test_no_dish_when_available_stock_insufficient)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 50, in test_no_dish_when_available_stock_insufficient
-    self.assertEqual(nd[0]["data"], {})
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-AssertionError: {'table_id': 'T1'} != {}
-- {'table_id': 'T1'}
-+ {}
-
-======================================================================
-FAIL: test_waiting_customer_leaves_on_zero_patience_and_drops_reputation (test_quan_p1.QuanLat3CustomersAndReservation.test_waiting_customer_leaves_on_zero_patience_and_drops_reputation)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 83, in test_waiting_customer_leaves_on_zero_patience_and_drops_reputation
-    self.assertEqual(left[0]["data"].get("order_id"), "C1")
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: None != 'C1'
-
-======================================================================
-FAIL: test_closing_pays_eating_just_served_clears_stoves_and_no_spawn (test_quan_p1.QuanLat4CookServePayClose.test_closing_pays_eating_just_served_clears_stoves_and_no_spawn)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 318, in test_closing_pays_eating_just_served_clears_stoves_and_no_spawn
-    self.assertEqual(len(paid), 1)
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-AssertionError: 0 != 1
-
-======================================================================
-FAIL: test_full_cook_pick_serve_pay_with_tip_and_reputation (test_quan_p1.QuanLat4CookServePayClose.test_full_cook_pick_serve_pay_with_tip_and_reputation)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 162, in test_full_cook_pick_serve_pay_with_tip_and_reputation
-    self.assertEqual(cs[0]["data"], {
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-        "stove_id": "B1",
-        ^^^^^^^^^^^^^^^^^
-    ...<3 lines>...
-        "base_price": dish["price"],
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    })
-    ^^
-AssertionError: {'stove_id': 'B1', 'customer_id': 'C1', 'dish_id': 'ca_loc_nuong_trui'} != {'stove_id': 'B1', 'order_id': 'C1', 'dish_id': 'ca_loc_nuong[41 chars]: 60}
-- {'customer_id': 'C1', 'dish_id': 'ca_loc_nuong_trui', 'stove_id': 'B1'}
-+ {'base_price': 60,
-+  'dish_id': 'ca_loc_nuong_trui',
-+  'items': ['ca_loc'],
-+  'order_id': 'C1',
-+  'stove_id': 'B1'}
-
-======================================================================
-FAIL: test_serve_on_exact_zero_patience_tick_still_valid (test_quan_p1.QuanLat4CookServePayClose.test_serve_on_exact_zero_patience_tick_still_valid)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 227, in test_serve_on_exact_zero_patience_tick_still_valid
-    self.assertEqual(len(events(rows, "served")), 1)
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: 0 != 1
-
-----------------------------------------------------------------------
-Ran 109 tests in 15.652s
-
-FAILED (failures=8)
+OK

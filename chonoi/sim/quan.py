@@ -79,30 +79,27 @@ class QuanSim:
         self.time_left_ticks = max(0, self.time_left_ticks - 1)
         self._elapsed_ticks += 1
 
-        # Kiên nhẫn bắt đầu giảm ở tick sau khi khách đến/được dựng fixture.
-        for c in sort_by_id(self.customers):
-            if c.get("state", "waiting") == "waiting" and c.get("arrived_tick", 0) != self._elapsed_ticks:
-                c["patience_ticks_left"] = max(0, int(c.get("patience_ticks_left",
-                                                              int(round(self.t["patience_s"] * TICK))) - 1))
-        events.extend(self._remove_impatient_customers())
-        self._cancel_orphan_orders()
-        # Lát 4: bếp nấu -> chín, khách ăn xong -> trả tiền (bộ đếm giảm từ bước SAU khi đặt).
+        for c in self.customers:
+            timer = "eat_ticks_left" if c["state"] == "eating" else "patience_ticks_left"
+            c[timer] = max(0, c[timer] - 1)
         events.extend(self._tick_stoves())
-        events.extend(self._tick_eating())
 
         self._move(inp)
         if inp.pressed("interact"):
             events.extend(self._interact())
-        if not self.done and self._next_customer_tick is not None and self._elapsed_ticks >= self._next_customer_tick:
+
+        closing = self.time_left_ticks == 0
+        events.extend(self._settle_customers(closing))
+        self._cancel_orphan_orders()
+        if closing:
+            self.done = True
+            self.reason = "time"
+            events.append(("quan_end", {"reason": "time", "money": self.money, "earned": self.earned,
+                                        "shift_earned": self.shift_earned, "reputation": self.reputation}))
+        elif self._next_customer_tick is not None and self._elapsed_ticks >= self._next_customer_tick:
             events.extend(self._seat_scheduled_customer())
             interval_ticks = int(round(self.t["customer_interval_s"] * TICK))
             self._next_customer_tick += max(1, interval_ticks)
-        if self.time_left_ticks <= 0:
-            self.done = True
-            self.reason = "time"
-            events.extend(self._close_customers())
-            events.append(("quan_end", {"reason": "time", "money": self.money, "earned": self.earned,
-                                        "shift_earned": self.shift_earned, "reputation": self.reputation}))
         return events
 
     def _reserve_fixture_customers(self):
@@ -142,7 +139,6 @@ class QuanSim:
             c["eat_ticks_left"] = int(c.get("eat_ticks_left", 0))
             c["base_price"] = int(c.get("base_price", self.menu[dish_id]["price"] if dish_id else 0))
             c["tip"] = int(c.get("tip", 0))
-            c["arrived_tick"] = 0
 
         totals = {}
         for c in self.customers:
@@ -184,7 +180,7 @@ class QuanSim:
 
         available = self._available_dishes()
         if not available:
-            return [("no_dish", {"table_id": empty_tables[0]["id"]})]
+            return [("no_dish", {})]
 
         dish_id = self.rng.get("customers").choice(available)
         recipe = dict(self.menu[dish_id]["recipe"])
@@ -202,48 +198,35 @@ class QuanSim:
             "eat_ticks_left": 0,
             "base_price": int(self.menu[dish_id]["price"]),
             "tip": 0,
-            "arrived_tick": self._elapsed_ticks,
         }
         self.customers.append(customer)
         return [("customer_arrived", {
-            "customer_id": customer_id,
+            "order_id": customer_id,
             "table_id": table["id"],
             "dish_id": dish_id,
         })]
 
-    def _release_reserved(self, customer):
-        customer["reserved"] = {}
-
-    def _remove_impatient_customers(self):
+    def _settle_customers(self, closing):
         events = []
         remaining = []
-        for c in sort_by_id(self.customers):
-            if c.get("state", "waiting") == "waiting" and c.get("patience_ticks_left", 0) <= 0:
-                self._release_reserved(c)
-                self.reputation = max(float(self.t["reputation_min"]),
-                                      self.reputation + float(self.t["left_reputation_delta"]))
+        for c in sorted(self.customers, key=lambda customer: id_key(customer["table_id"])):
+            if c["state"] == "eating":
+                if closing or c["eat_ticks_left"] == 0:
+                    events.append(self._pay(c, "closing" if closing else "finished_eating"))
+                else:
+                    remaining.append(c)
+            elif closing or c["patience_ticks_left"] == 0:
+                if not closing:
+                    self._rep(float(self.t["left_reputation_delta"]))
                 events.append(("customer_left", {
-                    "customer_id": c["id"],
+                    "order_id": c["id"],
                     "table_id": c["table_id"],
-                    "reason": "patience",
+                    "reason": "closing" if closing else "patience",
                     "reputation": self.reputation,
                 }))
             else:
                 remaining.append(c)
         self.customers = remaining
-        return events
-
-    def _close_customers(self):
-        events = []
-        for c in sort_by_id(self.customers):
-            self._release_reserved(c)
-            events.append(("customer_left", {
-                "customer_id": c["id"],
-                "table_id": c["table_id"],
-                "reason": "closing",
-                "reputation": self.reputation,
-            }))
-        self.customers = []
         return events
 
     # --- Lát 4: bếp, bưng, phục vụ, tiền, uy tín ------------------------------
@@ -277,17 +260,8 @@ class QuanSim:
                 s["cook_ticks_left"] = max(0, s["cook_ticks_left"] - 1)
                 if s["cook_ticks_left"] == 0:
                     s["state"], s["ready_ticks"] = "ready", 0
-                    events.append(("dish_ready", {"stove_id": s["id"], "customer_id": s["dish"]["order_id"],
+                    events.append(("dish_ready", {"stove_id": s["id"], "order_id": s["dish"]["order_id"],
                                                   "dish_id": s["dish"]["dish_id"]}))
-        return events
-
-    def _tick_eating(self):
-        events = []
-        for c in sort_by_id(list(self.customers)):
-            if c.get("state") == "eating":
-                c["eat_ticks_left"] = max(0, c["eat_ticks_left"] - 1)
-                if c["eat_ticks_left"] == 0:
-                    events.append(self._pay(c))
         return events
 
     def _interact(self):
@@ -311,24 +285,26 @@ class QuanSim:
         orders = [c for c in self.customers if c.get("order_status") == "reserved" and c.get("dish_id")]
         if not orders:
             return []
-        c = min(orders, key=lambda x: (x["order_tick"], id_key(x["id"])))
+        c = min(orders, key=lambda order: (order["order_tick"], id_key(order["table_id"])))
         dish_id = c["dish_id"]
-        for kind, qty in self.menu[dish_id]["recipe"].items():
-            self.stock[kind] = self.stock.get(kind, 0) - qty
+        base_price = int(c["base_price"])
+        items = []
+        for kind, qty in sorted(c["reserved"].items()):
+            self.stock[kind] -= qty
+            items.extend([kind] * qty)
         c["reserved"], c["order_status"] = {}, "assigned"
-        stove.update(state="cooking", dish={"dish_id": dish_id, "order_id": c["id"]},
+        stove.update(state="cooking", dish={"dish_id": dish_id, "order_id": c["id"], "base_price": base_price},
                      cook_ticks_left=max(1, self._ticks(self.menu[dish_id]["cook_s"])), ready_ticks=0)
-        return [("cook_started", {"stove_id": stove["id"], "customer_id": c["id"], "dish_id": dish_id})]
+        return [("cook_started", {"stove_id": stove["id"], "order_id": c["id"], "dish_id": dish_id,
+                                  "items": items, "base_price": base_price})]
 
     def _pick(self, stove):
         if self.hand is not None:  # carry_limit = 1
             return []
         dish = stove["dish"]
-        c = self._customer(dish["order_id"])
-        self.hand = {"order_id": dish["order_id"], "dish_id": dish["dish_id"],
-                     "base_price": int(c["base_price"] if c else self.menu[dish["dish_id"]]["price"])}
+        self.hand = dish
         stove.update(state="idle", dish=None, cook_ticks_left=0, ready_ticks=0)
-        return [("dish_picked", {"stove_id": stove["id"], "customer_id": dish["order_id"],
+        return [("dish_picked", {"stove_id": stove["id"], "order_id": dish["order_id"],
                                  "dish_id": dish["dish_id"]})]
 
     def _serve(self, table):
@@ -344,18 +320,19 @@ class QuanSim:
         c.update(state="eating", order_status="served", base_price=price, tip=tip,
                  eat_ticks_left=max(1, self._ticks(self.t["eat_s"])))
         self.hand = None
-        return [("served", {"customer_id": c["id"], "table_id": c["table_id"], "dish_id": c["dish_id"], "tip": tip})]
+        return [("served", {"order_id": c["id"], "table_id": c["table_id"], "dish_id": c["dish_id"],
+                            "patience_ticks_left": c["patience_ticks_left"], "base_price": price, "tip": tip})]
 
-    def _pay(self, c):
-        amount = int(c["base_price"]) + int(c["tip"])
+    def _pay(self, c, reason):
+        base_price, tip = int(c["base_price"]), int(c["tip"])
+        amount = base_price + tip
         self.money += amount
         self.earned += amount
         self.shift_earned += amount
-        if c["tip"] > 0:  # [GĐ] có boa -> +tip_reputation (clarify #7)
+        if tip > 0:
             self._rep(float(self.t["tip_reputation"]))
-        self.customers = [x for x in self.customers if x["id"] != c["id"]]
-        return ("paid", {"customer_id": c["id"], "table_id": c["table_id"], "amount": amount, "tip": c["tip"],
-                         "money": self.money, "reputation": self.reputation})
+        return ("paid", {"order_id": c["id"], "table_id": c["table_id"], "base_price": base_price,
+                         "tip": tip, "amount": amount, "reason": reason})
 
     def _move(self, inp):
         speed = self.t["walk_speed"]

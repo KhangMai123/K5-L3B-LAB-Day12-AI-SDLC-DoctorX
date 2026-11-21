@@ -75,7 +75,7 @@ Chỉ ở live: `meta` = `tuning[mode]`, `menu` = `tuning.menu`, `events` = các
 | `player.pos [x,z]` | số | khung |
 | `stock {kind: n}` | **tồn vật lý** (chưa trừ giữ chỗ). Kho khả dụng = `stock − Σ reserved` của khách `order_status == "reserved"` | Lát 3 (không trừ khi giữ chỗ), Lát 4 (trừ khi bắt đầu nấu) |
 | `hand` | `null` hoặc `{"order_id": str, "dish_id": str, "base_price": int}`; `order_id` = id khách | Lát 4 |
-| `stoves[] {id, pos, state, dish, cook_ticks_left, ready_ticks}` | `state ∈ idle / cooking / ready`; `dish` = `null` hoặc `{"dish_id": str, "order_id": str}`; `ready_ticks` = số tick đã chín (dùng khi `burn_s` khác null, P1 = null) | Lát 4 |
+| `stoves[] {id, pos, state, dish, cook_ticks_left, ready_ticks}` | `state ∈ idle / cooking / ready`; `dish` = `null` hoặc `{"order_id": str, "dish_id": str, "base_price": int}`; `ready_ticks` = số tick đã chín (dùng khi `burn_s` khác null, P1 = null) | Lát 4 |
 | `tables[] {id, pos, customer_id}` | `customer_id` = khách đang ngồi hoặc `null` | khung (suy từ `customers`) |
 | `customers[]` | xem bảng dưới | Lát 3 tạo/bỏ, Lát 4 đổi trạng thái |
 
@@ -111,30 +111,30 @@ Dòng JSONL: `{"type":"event","tick":k+1,"phase":…,"name":…,"data":{…}}`. 
 |---|---|---|---|
 | `dive` | `{"pos":[x,d]}` | Lát 1 | đầu bước ở mặt nước (d ≤ `surface_depth`), cuối bước dưới nước |
 | `surface` | `{"pos":[x,d]}` | Lát 1 | ngược lại của `dive` |
-| `oxygen_empty` | `{}` | Lát 1 | oxy từ > 0 xuống 0 |
+| `oxygen_empty` | `{"oxygen_ticks": 0}` | Lát 1 | oxy từ > 0 xuống 0 |
 | `choke` | `{"hp": int}` | Lát 1 | đủ `choke_interval_ticks` tick ở oxy 0 dưới nước; `hp` = Máu **sau** khi trừ |
-| `faint` | `{"lost":[kind…]}` | Lát 1 | Máu về 0; `lost` = giỏ bị bỏ theo LIFO (mới nhất trước) |
+| `faint` | `{"cause": "choke", "lost": [kind…], "hp": 0}` | Lát 1 | Máu về 0; `lost` = giỏ bị bỏ theo LIFO (mới nhất trước) |
 | `gather` | `{"node_id", "kind", "amount": int}` | Lát 2 | hái nút ready gần nhất (ở mặt nước, hòa theo id) |
 | `node_regrown` | `{"node_id"}` | khung | `regrow_ticks` về 0 |
 | `fish_caught` | `{"fish_id", "kind", "yield": int}` | Lát 2 | `catch` dưới nước, hết hồi chiêu, có đàn trong `catch_radius` |
-| `hold_full` | `{"required": int, "free": int}` | Lát 2 | không đủ chỗ cho lượt hái/bắt (không thử đàn/nút khác) |
+| `hold_full` | `{"action": "gather", "node_id", "required": int, "free": int}` hoặc `{"action": "catch", "fish_id", "required": int, "free": int}` | Lát 2 | không đủ chỗ cho lượt hái/bắt (không thử đàn/nút khác) |
 | `gather_end` | `{"reason": "docked"\|"time"\|"fainted", "inventory": {"items": {…}}}` | khung (`_finish`) + Lát 1 (fainted) | kết thúc buổi; luôn là sự kiện cuối |
 
 ### Quan
 
 | Sự kiện | `data` | Phát bởi | Khi nào |
 |---|---|---|---|
-| `customer_arrived` | `{"customer_id", "table_id", "dish_id"}` | Lát 3 | khách đến theo lịch (`first_customer_tick`, rồi mỗi `customer_interval_s`), có bàn trống và có món đủ kho khả dụng; giữ chỗ ngay |
-| `no_dish` | `{"table_id"}` | Lát 3 | đến lịch, có bàn trống nhưng không món nào đủ kho khả dụng → không tạo khách, không chiếm bàn (clarify #1) |
-| `customer_left` | `{"customer_id", "table_id", "reason": "patience"\|"closing", "reputation": float}` | Lát 3 (Lát 4 cấp `_rep`) | hết kiên nhẫn (uy tín `+left_reputation_delta`) / hết ca; `reputation` = uy tín **sau** khi đổi; món của khách bị hủy, không hoàn nguyên liệu đã nấu (clarify #4) |
-| `cook_started` | `{"stove_id", "customer_id", "dish_id"}` | Lát 4 | interact bếp `idle` + có đơn `reserved` cũ nhất; trừ `stock`, xóa `reserved` |
-| `dish_ready` | `{"stove_id", "customer_id", "dish_id"}` | Lát 4 | `cook_ticks_left` về 0 → bếp `ready` |
-| `dish_picked` | `{"stove_id", "customer_id", "dish_id"}` | Lát 4 | interact bếp `ready`, tay trống (`carry_limit` = 1) |
-| `served` | `{"customer_id", "table_id", "dish_id", "tip": int}` | Lát 4 | interact bàn có khách `waiting` đúng `hand.order_id` |
-| `paid` | `{"customer_id", "table_id", "amount": int, "tip": int, "money": int, "reputation": float}` | Lát 4 | `eat_ticks_left` về 0; `amount = base_price + tip`; `money` = tiền **sau** khi cộng; có boa → uy tín `+tip_reputation` **[GĐ, clarify #7]**; `reputation` = uy tín sau khi đổi; bàn được giải phóng |
-| `quan_end` | `{"reason":"time", "money", "earned", "shift_earned", "reputation"}` | khung + Lát 4 | hết ca; luôn là sự kiện cuối (sau các `customer_left` closing) |
+| `customer_arrived` | `{"order_id", "table_id", "dish_id"}` | Lát 3 | khách đến theo lịch khi ca còn giờ, có bàn trống và có món đủ kho khả dụng. Giữ chỗ ngay |
+| `no_dish` | `{}` | Lát 3 | đến lịch, có bàn trống và không đủ kho cho bất kỳ món nào |
+| `customer_left` | `{"order_id", "table_id", "reason": "patience"\|"closing", "reputation": float}` | Lát 3 | sau tương tác, khách còn chờ hết kiên nhẫn hoặc hết ca. Chỉ `patience` đổi uy tín. Nhả giữ chỗ và hủy món, nguyên liệu đã nấu không hoàn lại |
+| `cook_started` | `{"stove_id", "order_id", "dish_id", "items": [kind…], "base_price": int}` | Lát 4 | bếp `idle` chọn đơn `reserved` theo `order_tick` rồi id bàn, tiêu nguyên liệu đã giữ và chốt giá. `items` khai triển theo số lượng, sắp theo tên kind |
+| `dish_ready` | `{"stove_id", "order_id", "dish_id"}` | Lát 4 | `cook_ticks_left` về 0 → bếp `ready` |
+| `dish_picked` | `{"stove_id", "order_id", "dish_id"}` | Lát 4 | interact bếp `ready`, tay trống (`carry_limit` = 1) |
+| `served` | `{"order_id", "table_id", "dish_id", "patience_ticks_left": int, "base_price": int, "tip": int}` | Lát 4 | bàn có khách `waiting` đúng `hand.order_id`. Dùng kiên nhẫn sau khi giảm timer, phục vụ hợp lệ cả khi vừa về 0 hoặc ở tick cuối |
+| `paid` | `{"order_id", "table_id", "base_price": int, "tip": int, "amount": int, "reason": "finished_eating"\|"closing"}` | Lát 4 | sau tương tác, thu tiền khách ăn xong hoặc tất cả khách đang ăn khi đóng ca. Cộng `base_price + tip` vào tiền và doanh thu, boa dương cộng `tip_reputation`, rồi giải phóng bàn |
+| `quan_end` | `{"reason":"time", "money", "earned", "shift_earned", "reputation"}` | khung + Lát 4 | kết thúc sau khi thanh toán, cho khách chờ rời bàn và dọn bếp/tay |
 
-Thứ tự id trong một bước: nhiều thực thể cùng phát một loại sự kiện → theo `sort_by_id` (clarify #2).
+Trong một bước, xử lý nút tái sinh và bếp theo id thực thể. Ở Quán, xử lý khách rời bàn và thu tiền theo id bàn sau tương tác, rồi mới xét lượt khách mới nếu ca còn giờ.
 
 ---
 
@@ -146,3 +146,4 @@ Thứ tự id trong một bước: nhiều thực thể cùng phát một loại
 | 21/11/2026 | Minh | `hand` thêm `base_price`; bỏ [GĐ] cho `hand`/`stove.dish` | Đối chiếu PRD-0 mục D |
 | 21/11/2026 | Diệp | `price` → `base_price`; ghi rõ luật boa/uy tín của `paid` | Khớp code lát 3 + lát 4 |
 | 21/11/2026 | Diệp | Code lát 3 về đúng hợp đồng: snapshot `stock` = tồn vật lý; `no_dish` data `{table_id}`; `customer_left` thêm `reputation` | HUD của Nhài tự trừ giữ chỗ (bị trừ 2 lần) và đọc `customer_left.reputation` |
+| 21/11/2026 | Khang | Đồng bộ payload sự kiện, payload món và thứ tự xử lý Quán | PRD-0 Test Contract v1.0, mục D–F |

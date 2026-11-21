@@ -15,11 +15,19 @@ Cách làm việc kỹ thuật là **tự do** (push thẳng, nhánh + PR, pair,
 
 ## Bắt đầu nhanh
 
+Trên macOS/Linux, chạy các lệnh sau với Python 3.12 (phiên bản CI dùng).
+
 ```bash
-git clone <fork-của-nhóm> && cd <fork-của-nhóm>
-PYTHONPATH=tests:. python3 -m unittest discover -s tests -v        # smoke test
-python3 -m chonoi.live --mode gather                                # chơi thử trên trình duyệt (tùy chọn)
+git clone https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX.git && cd K5-L3B-LAB-Day12-AI-SDLC-DoctorX
+PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
+python3 -m chonoi.live --mode gather
 ```
+
+Mở địa chỉ server in ra. Để chơi riêng buổi tối, dùng `--mode quan`. Nhấn **WASD** hoặc **mũi tên** để di chuyển, **E** để hái, cập bến hoặc tương tác với bếp/bàn, **Space** để bắt cá dưới nước và **R** để chơi lại.
+
+Điểm được tính bằng `earned + 100 * floor(reputation)`. `earned` là tổng tiền đã thu trong lượt, tính bằng nghìn đồng.
+
+File chuyển nguyên liệu từ Lặn & Hái sang Mở Quán theo [schema kho](docs/contracts/README.md#1-file-kho-gather--quan), với [file JSON mẫu](docs/contracts/inventory.sample.json).
 
 Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headless --mode gather|quan …`) để được chạy và chấm tự động. **Công nghệ không ràng buộc**: khung Python trong `chonoi/` chỉ là gợi ý, chi tiết ở [`docs/STARTER.md`](docs/STARTER.md).
 

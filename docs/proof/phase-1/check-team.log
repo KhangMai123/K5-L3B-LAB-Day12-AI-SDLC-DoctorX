@@ -1,2 +1,3 @@
-KIỂM TRA DANH SÁCH THÀNH VIÊN KHÔNG ĐẠT:
-  - thành viên #3: GitHub handle chưa điền hoặc không hợp lệ ('…')
+python tools/check_team.py
+OK: 6 thành viên: danialtranz, trdphat, minh240804, HoangMinhDiep, nhaipt342k4, KhangMai123
+exit=0

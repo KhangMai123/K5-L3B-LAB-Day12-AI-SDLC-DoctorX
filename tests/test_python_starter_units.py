@@ -116,7 +116,7 @@ class Units(unittest.TestCase):
             s.step(li.advance())
         rows = s.step(li.advance())
         self.assertEqual([r["name"] for r in rows], ["no_dish"])
-        self.assertEqual(rows[0]["data"], {"table_id": "T1"})
+        self.assertEqual(rows[0]["data"], {})
 
 
 if __name__ == "__main__":

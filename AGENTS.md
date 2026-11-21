@@ -5,6 +5,8 @@
 ## Lệnh
 - Test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
 - Test Lát 2 (Phát): `PYTHONPATH=tests:. python3 -m unittest discover -s tests -p 'test_gather_lat2*.py' -v` — hái/bắt, thứ tự tick và smoke kho hai tiến trình; fixture ở `tests/fixtures/gather_lat2/`.
+- Smoke kho và determinism Phase 1: `PYTHONPATH=tests:. python3 -m unittest test_inventory_and_smoke test_jsonl_and_determinism -v`.
+- Kiểm tra danh sách nhóm: `python3 tools/check_team.py`.
 - Headless: `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl`
 - Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
 - Windows: smoke test gọi `headless_cmd` = `python3 …`; máy không có `python3` sẽ đỏ với mã 9009 (không phải lỗi luật). Tạo venv rồi chép `Scripts/python.exe` thành `Scripts/python3.exe`, thêm `Scripts` vào PATH, chạy test với `PYTHONPATH="tests;."`.
