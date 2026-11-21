@@ -1,0 +1,6 @@
+# KhangMai123 — phản tư cá nhân (≤ 200 từ)
+
+- **Tôi đã làm:** Bổ sung kiểm định contract (`chonoi/contract.py`) và kiểm mâu thuẫn scenario (`chonoi/scenario.py`), sửa `tests/helpers.py` để chạy được `headless_cmd` trên Windows lẫn Linux/macOS, cập nhật handle `KhangMai123` trong `TEAM.md`, viết bộ test Phase 1 (`test_contract_and_cli.py`, `test_scenario_and_inputs.py`, `test_jsonl_and_determinism.py`, `test_inventory_and_smoke.py`, `test_gather_p1.py`, `test_quan_p1.py`), chạy kiểm thử thực tế và hoàn thiện `docs/verification/phase-1.md` cùng log tại `docs/proof/phase-1/`.
+- **Tôi đã review:** Kiểm tra hợp đồng `game.contract.json`, `docs/contracts/inventory.sample.json` và tình trạng các nhánh trên repo DoctorX.
+- **AI sai ở đâu và tôi phát hiện thế nào:** Khi chạy test ban đầu trên Windows, `helpers.py` gọi `python3` gây lỗi `FileNotFoundError`; ngoài ra khi chạy smoke test trong thư mục tạm với `cwd` khác gốc repo thì không tìm thấy module `chonoi`. Tôi phát hiện qua lần chạy `unittest` thực tế và xử lý gọn trong `tests/helpers.py` và test smoke.
+- **Điều tôi học được:** Viết test hộp đen bám sát Test Contract v1.0 giúp tách bạch lỗi khung/hợp đồng với phần gameplay chưa merge của đồng đội, giữ báo cáo trung thực.
