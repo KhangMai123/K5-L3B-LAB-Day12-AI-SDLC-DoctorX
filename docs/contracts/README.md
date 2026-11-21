@@ -1,4 +1,37 @@
-# Hợp đồng tích hợp — Phase 1 (chốt phút 15)
+# Hợp đồng tích hợp — bản hiện hành v1.3 (Phase 4)
+
+> Chủ hợp đồng: **Diệp (Integrator)**. Mục **0** dưới đây là phần đổi từ v1.1 đến v1.3 và **đè lên** phần v1.0 ở các mục 1–3 khi khác nhau. Mục 1–3 giữ nguyên bản chốt Phase 1 để còn lịch sử.
+
+## 0. Thay đổi v1.1 → v1.3 (đang chạy trên `main`)
+
+**Manifest** (`game.contract.json`): `contract_version: "1.3"`; `bench_cmd`, `soak_cmd` ở gốc; `extensions: ["burn", "net", "current", "leaderboard"]`; `tuning` theo số chuẩn TICKET-02 + `freshness`, `day_plan`, `shop.upgrades.{oxygen,hp,net}`, `gather.monsters`, `gather.current`.
+
+**File kho v1.2 (thay Contract G):** `{"items":[{"id":"I1","kind":"ca_loc","fresh":100}, ...]}`; kho rỗng `{"items":[]}`. `id` duy nhất khác rỗng, cấp `I1, I2, …` theo thứ tự vào giỏ và tăng xuyên pha/Ngày; `kind` thuộc 6 nguyên liệu; `fresh` hữu hạn trong [0,100]. File kho đếm v1.0, id trùng, kind lạ, fresh ngoài miền → **mã 2**. Ghi một lần khi `gather_end`, nguyên tử, sắp theo id, đủ độ chính xác (JSONL làm tròn 3 chữ số, dung sai quan sát ±0.01). Mẫu: [`inventory.sample.json`](inventory.sample.json).
+
+**Vỏ event `--mode day`** (Test Contract 4.4–4.5): mọi event có thêm `day`. Snapshot tick 0 là dòng đầu, rồi `day_start → day_plan → phase_start(gather)` ở tick 0. Event kết thúc mang pha cũ (`gather_end` phase gather, `quan_end` phase quan, `shop_end` phase shop + Ngày cũ); `phase_start` của pha mới ở cùng tick. Snapshot day có `day, day_plan, upgrades, active_upgrades`; `active_upgrades` chỉ chép từ `upgrades` khi dựng Ngày mới.
+
+**Pause (cả ba mode, ở `runner.Session` / `DaySim`):** cạnh lên `pause` → `paused`, chỉ tăng tick ngoài; còn pause bỏ qua cạnh hành động và `buy`, `sim_tick`/`phase_tick`/timer/độ tươi đứng yên; cạnh kế tiếp → `resumed` rồi chạy gameplay ngay bước đó; snapshot `state:"paused"`.
+
+**Sự kiện thêm** (ai phát → ai nghe: sim → runner JSONL → UI toast / test):
+
+| Event | `data` | Phát bởi |
+|---|---|---|
+| `day_start`, `phase_start`, `paused`, `resumed` | `{}` | `DaySim` / `Session` |
+| `day_plan` | `dishes`, `ingredients` | `DaySim` |
+| `bought` / `buy_failed` | `upgrade, level, price, money` / `action, reason` (funds/max_level/unknown) | `ShopSim` |
+| `shop_end` | `reason` (done/time) | `ShopSim` |
+| `monster_hit` | `monster_id, hp, lost[] (cá thể, LIFO), pos` | `GatherSim` |
+| `fish_spawned` | `id, kind, pos` | `GatherSim` |
+| `faint` | thêm `cause:"monster"` khi do chạm, `lost[]`, `hp:0` | `GatherSim` |
+| `spoiled` | `item_id, kind, location` (hold/stock) | `GatherSim` / `QuanSim` |
+| `cook_started` | thêm `items[]` cá thể đã tiêu (sắp kind rồi id) | `QuanSim` |
+| `dish_burnt` (`burn`) | `stove_id, order_id, dish_id, order_status` | `QuanSim` |
+| `current_warning` / `current_start` / `current_end` (`current`) | `starts_at_phase_tick` / `direction, duration_ticks` / `direction, reason` (elapsed/phase_end) | `GatherSim` |
+
+**Snapshot thêm:** gather `monsters[]`, `player.invuln_ticks`, `hold[]` cá thể, `current` (null hoặc `{direction, ticks_left}` khi khai `current`); quán `stock[]` cá thể, `customers[].reserved` là mảng id; Shop `stock` dư, `time_left_ticks` tới lúc đóng.
+
+**Lệnh mới:** `bench_cmd --seed --duration --out` → `{avg_fps, p1_low_fps, frames, measured_s, load_ms}`; `soak_cmd --seed --days --out` → `{days, days_completed, crashes, results[{day, earned, reputation, score}], duration_s}`; headless day `--leaderboard <store> --player-name <tên>` (cặp, chỉ day); `run_cmd --export-leaderboard <out> [--leaderboard <store>]`.
+
 
 > Chủ hợp đồng: **Diệp (Integrator)**. Đổi bất kỳ tên trường / sự kiện nào ở đây: báo cả nhóm trong kênh chat **trước**, sửa file này cùng commit với code, ghi lý do (ADR hoặc dòng "Lịch sử thay đổi" cuối file).
 >
@@ -11,6 +44,10 @@ Quy ước chung:
 - Tiền là số nguyên (đơn vị nghìn đồng). Uy tín là số thực, kẹp `[reputation_min, reputation_max]`.
 
 ---
+
+---
+
+# Bản chốt Phase 1 (v1.0) — giữ để tra lịch sử
 
 ## 1. File kho (gather → quan)
 
@@ -147,3 +184,4 @@ Trong một bước, xử lý nút tái sinh và bếp theo id thực thể. Ở
 | 21/11/2026 | Diệp | `price` → `base_price`; ghi rõ luật boa/uy tín của `paid` | Khớp code lát 3 + lát 4 |
 | 21/11/2026 | Diệp | Code lát 3 về đúng hợp đồng: snapshot `stock` = tồn vật lý; `no_dish` data `{table_id}`; `customer_left` thêm `reputation` | HUD của Nhài tự trừ giữ chỗ (bị trừ 2 lần) và đọc `customer_left.reputation` |
 | 21/11/2026 | Khang | Đồng bộ payload sự kiện, payload món và thứ tự xử lý Quán | PRD-0 Test Contract v1.0, mục D–F |
+| 21/11/2026 | Diệp | Mục 0: v1.1–v1.3 (kho cá thể, vỏ event day, pause 3 mode, event/snapshot mới, bench/soak/leaderboard); `inventory.sample.json` sang schema v1.2 | TICKET-02/03/04; mẫu v1.0 bị mã 2 ở v1.2 |
