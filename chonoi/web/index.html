@@ -98,11 +98,18 @@ poll();
 
 // Mở rộng `current`: tiếng báo trước dòng lũ (chỉ client, không gửi gì vào sim). Trình duyệt chỉ cho phát
 // âm thanh sau thao tác đầu tiên của người chơi, nên AudioContext tạo lười.
-let sfxCtx = null, lastWarnTick = -1;
+// Phụ đề SFX: mỗi lần phát âm thanh thì hiện phụ đề 2.5 s — vẫn hiện khi trình duyệt chặn/tắt tiếng.
+let sfxCtx = null, lastWarnTick = -1, sfxCaption = null;
+function sfxSubtitle(w) {
+  if (!sfxCaption || performance.now() > sfxCaption.until) return;
+  ctx.fillStyle = "rgba(0,0,0,.75)"; ctx.fillRect(w / 2 - 220, 70, 440, 30);
+  text(sfxCaption.t, w / 2, 91, { align: "center", size: 18, bold: true, color: "#80d8ff" });
+}
 function currentSfx() {
   const w = (snap.events || []).filter((e) => e.name === "current_warning").pop();
   if (!w || w.tick === lastWarnTick) return;
   lastWarnTick = w.tick;
+  sfxCaption = { t: "🔊 [bíp bíp — báo trước dòng nước lũ]", until: performance.now() + 2500 };
   try {
     sfxCtx = sfxCtx || new (window.AudioContext || window.webkitAudioContext)();
     [0, 0.25].forEach((dt) => {
@@ -1076,6 +1083,7 @@ function frame() {
     else drawGather(w, h);
     rawLog(w, h);
     overlay(w, h);
+    sfxSubtitle(w);
     const areaW = ph === "quan" ? w - Math.max(240, Math.min(340, w * .3)) : w;
     const yb = snap.finished ? Math.min(h - 10, h / 2 + 190) : h - (ph === "quan" ? 40 : ph === "shop" ? 48 : 78) - 48;
     drawMa(12, yb, Math.min(460, areaW - 24));
