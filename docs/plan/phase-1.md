@@ -2,7 +2,7 @@
 
 - Mục tiêu: chơi được 2 buổi (gather, quan) đúng lõi PRD, đủ Test Contract v1.0, smoke 2 tiến trình xanh trên `main`, tag `phase-1` trước 1:00. Nhóm 6 người: thêm ít nhất 2 mục mở rộng (PO chốt ở phút 15).
 - Việc / người / phụ thuộc (chi tiết ở `TEAM.md`):
-  - [ ] Lát 1 — bơi, oxy, ngạt, ngất, giỏ — Hưng — khung sẵn có
+  - [x] Lát 1 — bơi, oxy, ngạt, ngất, giỏ — Hưng — khung sẵn có
   - [ ] Lát 2 — hái, bắt cá, cập bến, ghi kho — Phát — API giỏ của lát 1
   - [ ] Lát 3 — khách, giữ chỗ, kiên nhẫn, no_dish — Minh — kho mẫu `docs/contracts/inventory.sample.json`
   - [ ] Lát 4 — bếp, bưng, phục vụ, tiền, uy tín, quan_end — Diệp — trạng thái khách/đơn của lát 3
