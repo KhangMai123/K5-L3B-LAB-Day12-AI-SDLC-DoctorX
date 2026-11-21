@@ -6,6 +6,8 @@
 - Test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
 - Headless: `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl`
 - Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
+- Windows: smoke test gọi `headless_cmd` = `python3 …`; máy không có `python3` sẽ đỏ với mã 9009 (không phải lỗi luật). Tạo venv rồi chép `Scripts/python.exe` thành `Scripts/python3.exe`, thêm `Scripts` vào PATH, chạy test với `PYTHONPATH="tests;."`.
+- Hợp đồng tích hợp (kho, snapshot sim↔UI, sự kiện): `docs/contracts/README.md`, đọc trước khi sửa `sim/*` hoặc UI.
 
 ## Cấu trúc & quy ước
 - (Starter Python là TÙY CHỌN; nhóm có thể dùng ngôn ngữ khác nếu giữ Test Contract.) Khung do giảng viên cấp: `chonoi/{headless,inputs,scenario,contract,rng,ids,jsonl,inventory,runner,live}.py` và `chonoi/web/`. Hạn chế sửa; nếu phải sửa thì báo cả nhóm và ghi lại lý do.
