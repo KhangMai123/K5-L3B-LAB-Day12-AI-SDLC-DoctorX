@@ -13,11 +13,4 @@
   - Ảnh chụp "đang nấu" hiện khách "đang ăn" do snapshot dính tham chiếu; tôi so với số in ra thì thấy.
   - Chạy số thật mới lộ gợi ý sai lúc đang bưng món.
 - **Điều tôi học được:** UI chỉ đọc snapshot thì sáng tạo thoải mái mà không phá headless; chốt tên trường sớm giúp HUD khớp ngay khi gộp.
-
-## Phase 2–3
-
-- Được giao (xem `TEAM.md`): P2-F menu, các màn DayIntro/EveningIntro/DayResult/Shop/Summary, pause, HUD mới; P3 HUD độ tươi/hàng ươn.
-- Đã làm (commit): `5537cd7` (asset nhân vật quán: khách chờ/ăn/giận, Út Sen, icon cảnh báo).
-- Tôi đã review: *(tự điền)*
-- AI sai ở đâu và tôi phát hiện thế nào: *(tự điền)*
-- Điều tôi học được: *(tự điền)*
+- **P2–P4 (từ git log):** `5537cd7` asset nhân vật quán (khách chờ/ăn/giận, Út Sen, icon cảnh báo). Việc nhận ở P4: chơi thử 3 cảnh báo ở chế độ tương phản cao, chụp ảnh. *Tự điền.*

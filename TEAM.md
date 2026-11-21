@@ -46,6 +46,8 @@
 | Khang (P2-E, QA) | `inputs.py`, `scenario.py`, `tests/`: `pause`/`shop_done`/`buy`, `paused`/`resumed`; scenario khối `day`; regression P1 với số chuẩn | Có `test_day_p2`, `test_contract_and_cli` | Bổ sung test pause và Shop; smoke tích hợp → `docs/proof/phase-2/integration.*` (chưa có thư mục); `docs/verification/phase-2.md` nối đủ AC | Ma trận AC-P2 có bằng chứng thật |
 | Nhài (P2-F, UI) | `web/index.html`, `live.py`: menu chính, DayIntro/EveningIntro/DayResult/Shop/Summary, pause Esc/P, HUD mới ("Thủy quái!", "Hết hơi!", cần/đã lấy, màu < 25 %), chữ ≥ 18 px @1280×720 | Có màn day/shop (`921f3a8`, `3e05e0c`), asset (`5537cd7`, `e41c329`, `e8fec51`, `685a1b9`) | Đối chiếu từng mục HUD với ticket; ảnh chụp → `docs/proof/phase-2/ui/`; **mở rộng thứ 2** của P2 nếu `net` không kịp (đề xuất Settings & âm thanh) | Chơi trọn 1 Ngày, có ảnh chứng |
 
+**Kết quả thực tế Phase 2 (rà lúc tích hợp cuối):** việc "còn lại" ở bảng trên phần lớn do **Diệp** làm trong phiên tích hợp cuối vì các lát chưa kịp: trả lịch khách về số chuẩn, vỏ event `--mode day`, pause cả 3 mode, Cá Sấu recoil lùi xa người chơi, mở rộng `net`, HUD "Hết hơi!"/viền tím/"Cần lấy" (commit trên nhánh `p23/team-diep`, ma trận ở `docs/verification/phase-2.md`). Chưa làm: ảnh chụp UI.
+
 ## Chia việc Phase 3 (TICKET-03 "Mùa Nước Nổi", Test Contract v1.2)
 
 > Thứ tự tích hợp để `main` luôn chạy: (1) adapter schema kho + test migration → (2) Lặn và Quán song song → (3) HUD → (4) bật v1.2, smoke file + day → (5) mở rộng. Lõi độ tươi đã vào `main` (`0a725a8`, `tests/test_fresh_p3.py`); các lát dưới đây kiểm theo từng quy tắc của ticket.
@@ -60,6 +62,20 @@
 | QA, migration, bằng chứng | **Khang** | `tests/`, `docs/verification/phase-3.md`, `docs/proof/phase-3/` | Regression P1–P2 còn hiệu lực; ghi lý do mọi test đổi vì luật mới | Ma trận AC-P3 có bằng chứng thật; **mở rộng `current`** (dòng nước lũ, cùng Phát) |
 
 **Mở rộng (nhóm 6 → ≥ 2 mục mỗi phase):** P2 hiện mới khai `burn`; P3 chưa có mục nào. PO (Minh) chốt: P2 thêm `net` (Phát); P3 làm `reservations` (Minh) + `current` (Phát, Khang). Mỗi mục khai trong `extensions`, có test và ghi trong README.
+
+**Kết quả thực tế Phase 3:** lõi độ tươi do Hưng đưa vào (`0a725a8`); Diệp thêm `current`, HUD độ tươi + sửa HUD giỏ vỡ với cá thể, id mới từ Ngày 2, `inventory.sample.json` v1.2, test `test_fresh_rules_p3`. Chưa làm: `reservations`, ảnh chụp HUD.
+
+## Chia việc Phase 4 (TICKET-04 "Phát hành v1.0.0", Test Contract v1.3)
+
+| Vai (ticket) | Người nhận | Việc | Trạng thái |
+|---|---|---|---|
+| Đóng gói | **Phát** (dự phòng: Hưng) | Thử clone sạch trên macOS/Linux, chạy 3 lệnh README, tạo `chonoi-doctorx-v1.0.0.zip` | Diệp đã thử clone sạch (Windows, lệnh tương đương) — `docs/proof/phase-4/clean-clone.log`; **cần một bạn chạy lại trên macOS/Linux** |
+| Bench/QA | **Khang** | Chạy `bench_cmd`, `soak_cmd`, regression P1–P3, `docs/verification/phase-4.md` | Diệp viết lại `bench`/`soak` cho đúng ticket, artifact ở `docs/proof/phase-4/`; Khang rà ma trận |
+| Release/Integrator | **Diệp** | Kiểm commit bàn giao, release notes, CHANGELOG, gắn tag `phase-1`…`phase-4`, công bố Release `v1.0.0` | Xong: `docs/release-notes-v1.0.0.md`, `CHANGELOG.md`, tag (xem `docs/proof/phase-4/tags.log`) |
+| Điều phối retro | **Hưng** (Scrum) | Rà hành động retro P1/P2, tổng hợp bằng chứng đóng góp, `docs/retro.md` | Diệp soạn bản nháp từ git log; Hưng + cả nhóm chốt |
+| Cảnh báo + tương phản cao | **Nhài** | Thử 3 cảnh báo (thủy quái, oxy, khách sắp giận) ở chế độ H, ảnh chụp | Code có (phím H; cảnh báo chữ + biểu tượng); **cần Nhài chơi thử + chụp ảnh** |
+| Mở rộng P4 + PO | **Minh** | Chốt mở rộng P4, xác nhận clarify #8–#13 | Diệp làm `leaderboard` + phụ đề SFX; Minh xác nhận clarify |
+| Phản tư cá nhân | **Mọi người** | `docs/members/<handle>.md` ≤ 200 từ: phần mình làm, đã giúp ai, AI sai ở đâu, bài học | Diệp viết của mình; mục của người khác có khung + commit thật, **phản tư mỗi người tự viết** |
 
 ## Mốc thời gian Phase 1 (60 phút)
 

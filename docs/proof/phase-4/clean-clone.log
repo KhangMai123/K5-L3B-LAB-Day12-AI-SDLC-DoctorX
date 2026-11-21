@@ -1,0 +1,17 @@
+# Clone sạch → 3 lệnh README (chạy trên Windows 11, Git Bash, Python 3.12.3)
+commit: 2ad49a3
+Ghi chú: README viết cho macOS/Linux; ở đây PYTHONPATH dùng 'tests;.' (Windows) và clone từ repo cục bộ tại commit trên thay cho URL GitHub.
+
+$ git clone <repo> K5-L3B-LAB-Day12-AI-SDLC-DoctorX && cd K5-L3B-LAB-Day12-AI-SDLC-DoctorX
+exit 0 — HEAD 2ad49a3, 162 file, git status: 0 thay đổi
+
+$ PYTHONPATH=tests:. python3 -m unittest discover -s tests
+Ran 157 tests in 44.131s
+OK
+
+$ python3 -m chonoi.live --mode day --days 5
+Mở trình duyệt tại http://127.0.0.1:8777/  (chế độ day, 5 Ngày, seed 1). Ctrl+C để dừng.
+  gather/quan: WASD · E · Space · R
+GET / -> HTTP 200, 68998 byte HTML
+GET /state -> mode day phase gather day 1 state playing tick 49
+(đã dừng server)
