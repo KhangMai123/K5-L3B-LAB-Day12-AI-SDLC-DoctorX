@@ -78,7 +78,8 @@ class DaySim:
         self.tuning = tuning
         self.rng = streams
         self.ids = ids
-        self.days_target = max(1, min(5, int(days)))
+        # headless/live giới hạn --days trong [1, 5]; soak chạy nhiều hơn (D1–D5 lặp ở Ngày 6+)
+        self.days_target = max(1, int(days))
         self.days_completed = 0
         day_block = scenario.get("day", {}) if isinstance(scenario, dict) else {}
         self.money = int(day_block.get("money", 0))
