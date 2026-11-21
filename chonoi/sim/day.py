@@ -115,19 +115,20 @@ class DaySim:
             "ingredients": dict(plan.get("ingredients") or {}),
         }
         gsc = dict(self.gather_template)
-        # Ngày > 1: không giữ hold mẫu trừ khi fixture nói rõ chỉ Ngày 1
+        # TICKET-03: Ngày đầu giữ nguyên id trong mẫu gather.hold; các Ngày kế cấp id mới theo thứ tự mảng
+        # với kind/fresh ban đầu (id vật lý duy nhất, tăng xuyên Ngày).
         if self.day > 1 and "hold" in gsc:
-            # P3 sẽ cấp id mới; P2 hold là kind list — clear mang sang trừ khi scenario chỉ 1 ngày
-            pass
+            gsc["hold"] = [h if isinstance(h, str) else {k: v for k, v in h.items() if k != "id"}
+                           for h in gsc["hold"]]
         self._child = GatherSim(
             self.tuning, gsc, self.rng, self.ids,
             day=self.day, active_upgrades=self.active_upgrades,
         )
         self.time_left_ticks = self._child.time_left_ticks
         self._pending_events = [
-            ("day_start", {}),
-            ("day_plan", dict(self.current_plan)),
-            ("phase_start", {}),
+            ("day_start", {}, "gather", self.day),
+            ("day_plan", dict(self.current_plan), "gather", self.day),
+            ("phase_start", {}, "gather", self.day),
         ]
 
     def _start_quan(self, inventory):
@@ -141,7 +142,7 @@ class DaySim:
             menu_filter=list(self.current_plan["dishes"].keys()),
         )
         self.time_left_ticks = self._child.time_left_ticks
-        self._pending_events.append(("phase_start", {}))
+        self._pending_events.append(("phase_start", {}, "quan", self.day))
 
     def _start_shop(self):
         self.phase = "shop"
@@ -156,7 +157,13 @@ class DaySim:
             self.upgrades, stock, self.rng,
         )
         self.time_left_ticks = self._child.time_left_ticks
-        self._pending_events.append(("phase_start", {}))
+        self._pending_events.append(("phase_start", {}, "shop", self.day))
+
+    def take_initial_events(self):
+        """Event dựng Ngày 1 (day_start → day_plan → phase_start(gather)) thuộc tick 0, trước bước đầu."""
+        out, self._pending_events = self._pending_events, []
+        self.event_meta = [(p, d) for _, _, p, d in out]
+        return [(n, data) for n, data, _, _ in out]
 
     @property
     def hold(self):
@@ -173,28 +180,26 @@ class DaySim:
         return snap
 
     def step(self, inp):
-        events = []
-        # flush pending phase events first (same tick as transition)
-        if self._pending_events:
+        events = []  # (name, data, phase, day) — event kết thúc mang pha/Ngày cũ (Test Contract 4.4)
+
+        def flush():
             events.extend(self._pending_events)
             self._pending_events = []
 
+        flush()
         if inp.pressed("pause"):
             if not self.paused:
                 self.paused = True
-                events.append(("paused", {}))
-                return events
+                events.append(("paused", {}, self.phase, self.day))
+                return self._emit(events)
             self.paused = False
-            events.append(("resumed", {}))
+            events.append(("resumed", {}, self.phase, self.day))
             # tiếp tục gameplay trong cùng bước
 
         if self.paused:
-            return events
+            return self._emit(events)
 
-        # shop buy from frame
-        if self.phase == "shop" and getattr(inp, "buy", None):
-            pass  # ShopSim đọc inp.buy
-
+        phase, day = self.phase, self.day
         child_events = self._child.step(inp)
         self.phase_tick += 1
         self.time_left_ticks = self._child.time_left_ticks
@@ -207,17 +212,13 @@ class DaySim:
             self.upgrades = dict(self._child.upgrades)
 
         for name, data in child_events:
-            events.append((name, data))
+            events.append((name, data, phase, day))
             if name == "gather_end":
-                inv = data.get("inventory", {}).get("items", {})
-                self._start_quan(inv)
-                # phase_start cùng tick
-                events.extend(self._pending_events)
-                self._pending_events = []
+                self._start_quan(data.get("inventory", {}).get("items", {}))
+                flush()  # phase_start(quan) cùng tick
             elif name == "quan_end":
                 self._start_shop()
-                events.extend(self._pending_events)
-                self._pending_events = []
+                flush()
             elif name == "shop_end":
                 self.days_completed += 1
                 # áp cấp đã mua sang active từ Ngày kế
@@ -228,6 +229,9 @@ class DaySim:
                 else:
                     self.day += 1
                     self._start_day()
-                    events.extend(self._pending_events)
-                    self._pending_events = []
-        return events
+                    flush()
+        return self._emit(events)
+
+    def _emit(self, events):
+        self.event_meta = [(p, d) for _, _, p, d in events]
+        return [(n, data) for n, data, _, _ in events]

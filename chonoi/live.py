@@ -58,7 +58,7 @@ class LiveGame:
             inventory=self.inventory, days=self.days,
         )
         self.inputs = LiveInputs()
-        self.events = []
+        self.events = list(self.session.initial_events())
         self._saved = False
         self.error = None
 

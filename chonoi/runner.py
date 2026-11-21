@@ -64,13 +64,24 @@ class Session:
                 self.sim_tick = self.tick  # simplified: wall clock for day outer; gameplay tracked in phase_tick
             else:
                 self.sim_tick = self.tick
+        return self._rows(events)
+
+    def _rows(self, events):
+        # day: mỗi event mang (phase, day) lúc phát — event kết thúc mang pha cũ (Test Contract 4.4)
+        meta = getattr(self.sim, "event_meta", None) if self.mode == "day" else None
         rows = []
-        for name, data in events:
-            row = {"type": "event", "tick": self.tick, "phase": self.sim.phase, "name": name, "data": data}
+        for i, (name, data) in enumerate(events):
+            phase, day = meta[i] if meta else (self.sim.phase, getattr(self.sim, "day", None))
+            row = {"type": "event", "tick": self.tick, "phase": phase, "name": name, "data": data}
             if self.mode == "day":
-                row["day"] = self.sim.day
+                row["day"] = day
             rows.append(row)
         return rows
+
+    def initial_events(self) -> list:
+        """Event của tick 0 (day: day_start → day_plan → phase_start(gather))."""
+        take = getattr(self.sim, "take_initial_events", None)
+        return self._rows(take()) if take else []
 
     def end_row(self) -> dict:
         sim = self.sim
@@ -95,7 +106,9 @@ def run(mode, tuning, scenario, seed, frames, ticks, out_path, snapshot_every,
     player = InputPlayer(frames)
     w = JsonlWriter(out_path)
     try:
-        w.write(sess.snapshot())
+        w.write(sess.snapshot())  # Contract B: snapshot tick 0 là dòng đầu
+        for row in sess.initial_events():  # rồi event của tick 0 (day: day_start → day_plan → phase_start)
+            w.write(row)
         last_snapped = 0
         while sess.tick < ticks and not sess.done:
             inp = player.advance(sess.tick)
