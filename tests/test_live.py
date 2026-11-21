@@ -46,6 +46,7 @@ class LiveServerTest(unittest.TestCase):
             code, html = _get(base + "/")
             self.assertEqual(code, 200)
             self.assertIn(b"<canvas", html)
+            self.assertIn(b"drawShop", html)
             code, png = _get(base + "/assets/ca_loc.png")
             self.assertEqual(code, 200)
             self.assertTrue(png.startswith(b"\x89PNG"), "ảnh asset phải là PNG thật")
@@ -66,6 +67,55 @@ class LiveServerTest(unittest.TestCase):
             server.stop()
         self.assertFalse(server.game._thread.is_alive())
         self.assertFalse(server._thread.is_alive())
+
+    def test_day_mode_phase_and_shop_input(self):
+        tuning = load_contract()["tuning"]
+        # Scenario ngắn: gather hết giờ gần như ngay → quan → shop
+        scenario = {
+            "gather": {"time_left_ticks": 3, "hold": []},
+            "quan": {"time_left_ticks": 3, "stock": []},
+            "day": {"money": 300, "earned": 300},
+        }
+        server = LiveServer(LiveGame("day", tuning, scenario, 1, days=1), port=0)
+        server.start()
+        try:
+            base = f"http://127.0.0.1:{server.port}"
+            st = json.loads(_get(base + "/state")[1])
+            self.assertEqual(st["mode"], "day")
+            self.assertEqual(st["day"], 1)
+            self.assertIn(st["phase"], ("gather", "quan", "shop"))
+            # chờ sang shop (gather/quan ngắn ở 60 tick/s)
+            deadline = time.time() + 4
+            while time.time() < deadline:
+                st = json.loads(_get(base + "/state")[1])
+                if st["phase"] == "shop" or st.get("finished"):
+                    break
+                time.sleep(0.02)
+            self.assertEqual(st["phase"], "shop", "day phải vào shop sau gather/quan ngắn")
+            self.assertEqual(st["meta"], tuning["shop"])
+            self.assertIn("upgrades", st)
+            money_before = st["money"]
+            self.assertEqual(_post(base + "/input", {"buy": "oxygen"}), 200)
+            deadline = time.time() + 1
+            bought = False
+            while time.time() < deadline:
+                st = json.loads(_get(base + "/state")[1])
+                if st.get("upgrades", {}).get("oxygen", 0) >= 1 or st["money"] < money_before:
+                    bought = True
+                    break
+                time.sleep(0.02)
+            self.assertTrue(bought, "buy oxygen phải trừ tiền / tăng cấp")
+            self.assertEqual(_post(base + "/input", {"shop_done": True}), 200)
+            deadline = time.time() + 2
+            while time.time() < deadline:
+                st = json.loads(_get(base + "/state")[1])
+                if st.get("finished"):
+                    break
+                time.sleep(0.02)
+            self.assertTrue(st.get("finished"), "shop_done phải kết thúc 1 Ngày")
+            self.assertEqual(st.get("reason"), "days_complete")
+        finally:
+            server.stop()
 
 
 if __name__ == "__main__":

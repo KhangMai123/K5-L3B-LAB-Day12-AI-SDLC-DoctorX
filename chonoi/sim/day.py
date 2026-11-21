@@ -198,8 +198,8 @@ class DaySim:
         child_events = self._child.step(inp)
         self.phase_tick += 1
         self.time_left_ticks = self._child.time_left_ticks
-        # sync economy from child
-        if hasattr(self._child, "money"):
+        # sync economy from quan/shop only — GatherSim giữ money=0 cho HUD đơn buổi
+        if self.phase in ("quan", "shop"):
             self.money = self._child.money
             self.earned = self._child.earned
             self.reputation = self._child.reputation

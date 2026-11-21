@@ -11,7 +11,7 @@
 - Day: `python3 -m chonoi.headless --mode day --seed 1 --days 1 --ticks 22200 --out day.jsonl`
 - Bench: `python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json`
 - Soak: `python3 -m chonoi.soak --seed 7 --days 10 --out soak.json`
-- Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
+- Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan|day [--days 1]` (mở địa chỉ in ra; WASD, E, Space, R; day/shop: 1/2 mua, Enter/E xong shop)
 - Windows: smoke test gọi `headless_cmd` = `python3 …`; máy không có `python3` sẽ đỏ với mã 9009 (không phải lỗi luật). Tạo venv rồi chép `Scripts/python.exe` thành `Scripts/python3.exe`, thêm `Scripts` vào PATH, chạy test với `PYTHONPATH="tests;."`.
 - Hợp đồng tích hợp (kho, snapshot sim↔UI, sự kiện): `docs/contracts/README.md`, đọc trước khi sửa `sim/*` hoặc UI.
 

@@ -20,13 +20,14 @@ Trên macOS/Linux, chạy các lệnh sau với Python 3.12 (phiên bản CI dù
 ```bash
 git clone https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX.git && cd K5-L3B-LAB-Day12-AI-SDLC-DoctorX
 PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
-python3 -m chonoi.live --mode gather
+python3 -m chonoi.live --mode day --days 1
+# hoặc từng buổi: --mode gather | --mode quan
 # tùy chọn Phase 4:
 # python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json
 # python3 -m chonoi.soak --seed 7 --days 10 --out soak.json
 ```
 
-Mở địa chỉ server in ra. Để chơi riêng buổi tối, dùng `--mode quan`. Nhấn **WASD** hoặc **mũi tên** để di chuyển, **E** để hái, cập bến hoặc tương tác với bếp/bàn, **Space** để bắt cá dưới nước và **R** để chơi lại.
+Mở địa chỉ server in ra. `--mode day` chạy cả vòng Ngày (sáng → quán → shop) trong một cửa sổ. Nhấn **WASD** / **mũi tên** để di chuyển, **E** để hái / cập bến / bếp-bàn (shop: xong), **Space** bắt cá, **1/2** mua oxy/Máu ở shop, **Enter** xong shop, **R** chơi lại.
 
 Điểm được tính bằng `earned + 100 * floor(reputation)`. `earned` là tổng tiền đã thu trong lượt, tính bằng nghìn đồng.
 
