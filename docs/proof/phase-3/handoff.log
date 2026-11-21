@@ -1,14 +1,14 @@
 # Bàn giao kho cá thể qua file (fresh 100, cập bến frame 0, quan --ticks 0)
-commit: befa40d
+commit: 2c87a08
 
-$ python3 -m chonoi.headless --mode gather --seed 1 --ticks 10 --scenario ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\h.json --inputs ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\dock.json --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\h.jsonl --inventory-out docs\proof\phase-3\handoff.kho.json
-exit 0 (0.13 s)
+$ python3 -m chonoi.headless --mode gather --seed 1 --ticks 10 --scenario ..\..\AppData\Local\Temp\chonoi-proof-t6lwbb8e\h.json --inputs ..\..\AppData\Local\Temp\chonoi-proof-t6lwbb8e\dock.json --out ..\..\AppData\Local\Temp\chonoi-proof-t6lwbb8e\h.jsonl --inventory-out docs\proof\phase-3\handoff.kho.json
+exit 0 (0.16 s)
 [ĐẠT] file kho sau 1 lần hao ở gather: fresh = 100 − 0.5/60 — [{"id": "I1", "kind": "ca_linh", "fresh": 99.99166666666666}]
-$ python3 -m chonoi.headless --mode quan --seed 1 --ticks 0 --inventory docs\proof\phase-3\handoff.kho.json --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\hq.jsonl
-exit 0 (0.14 s)
+$ python3 -m chonoi.headless --mode quan --seed 1 --ticks 0 --inventory docs\proof\phase-3\handoff.kho.json --out ..\..\AppData\Local\Temp\chonoi-proof-t6lwbb8e\hq.jsonl
+exit 0 (0.13 s)
 [ĐẠT] snapshot quán tick 0 khớp chính xác id/kind/fresh
-$ python3 -m chonoi.headless --mode quan --seed 1 --ticks 0 --inventory ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\old.json --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\o.jsonl
-exit 2 (0.18 s)
+$ python3 -m chonoi.headless --mode quan --seed 1 --ticks 0 --inventory ..\..\AppData\Local\Temp\chonoi-proof-t6lwbb8e\old.json --out ..\..\AppData\Local\Temp\chonoi-proof-t6lwbb8e\o.jsonl
+exit 2 (0.13 s)
 stderr: đầu vào sai: kho đếm (object) không còn hợp lệ ở contract v1.2; dùng mảng cá thể
 [ĐẠT] file kho đếm kiểu v1.0 bị từ chối (mã 2)
 

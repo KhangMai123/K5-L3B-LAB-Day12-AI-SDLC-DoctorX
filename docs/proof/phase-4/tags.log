@@ -1,0 +1,12 @@
+# Tag phase-1 … phase-4 và Release v1.0.0
+
+Các tag phase-1 … phase-3 được gắn **muộn** (sau hạn giờ) lúc phát hành v1.0.0, vào commit hoàn tất công việc của phase đó trên main.
+Code P2 và P3 vào main cùng một commit lớn (0a725a8), nên phase-2/phase-3 trỏ vào commit hoàn tất phần sửa lõi của phase tương ứng.
+phase-4 và Release v1.0.0 trỏ vào commit chứa file này (commit bàn giao cuối).
+
+| Tag | Commit | Lý do chọn | contract_version | Bộ test tại commit (worktree sạch) |
+|---|---|---|---|---|
+| `phase-1` | `a4fb13f` | PR #6 p1/phase1-pr, commit cuối trên main trước code P2 | 1.0 | Ran 110 tests OK |
+| `phase-2` | `758b889` | lõi P2 xong: lịch khách, vỏ event day, pause 3 mode, recoil, net | 1.3 | Ran 153 tests OK |
+| `phase-3` | `2ad49a3` | lõi P3 xong: HUD độ tươi, current, test giá theo tươi/giữ lại khi ươn | 1.3 | Ran 157 tests OK |
+| `phase-4` = `v1.0.0` | commit chứa file này | commit bàn giao: mọi bằng chứng docs/proof/phase-{2,3,4} tạo lại trên commit cha 2c87a08 (code giống hệt) | 1.3 | xem test-suite.log |
