@@ -4,6 +4,7 @@
 
 ## Lệnh
 - Test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
+- Test Lát 2 (Phát): `PYTHONPATH=tests:. python3 -m unittest discover -s tests -p 'test_gather_lat2*.py' -v` — hái/bắt, thứ tự tick và smoke kho hai tiến trình; fixture ở `tests/fixtures/gather_lat2/`.
 - Headless: `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl`
 - Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
 
