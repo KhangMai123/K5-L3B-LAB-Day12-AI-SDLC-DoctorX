@@ -7,4 +7,4 @@
 | 3 | 21/11/2026 | ID khách mới có định dạng bắt buộc không? | Giả định: Sinh ID C1, C2... không trùng fixture. | Minh + Diệp |
 | 4 | 21/11/2026 | Khách rời đi khi món đã trên tay thì xử lý thế nào? | Theo Test Contract: Hủy món, không hoàn nguyên liệu đã tiêu thụ. | Minh + Diệp |
 | 5 | 21/11/2026 | Scenario có khách và đơn sẵn thì có tạo lại đơn không? | Không tạo lại; giữ nguyên fixture, suy ra reserved khi thiếu theo contract. | Minh |
-| 6 | 21/11/2026 | `hand` và `stove.dish` trong snapshot quán có dạng gì? Khóa `data` của `cook_started`/`dish_ready`/`dish_picked`/`served`/`paid` là gì? | Giả định (hợp đồng `docs/contracts/README.md`): `null` hoặc `{"dish_id","order_id"}`, `order_id` = id khách; `data` theo mục 3 của hợp đồng. **Chờ PO đối chiếu PRD-0 mục E.** | Diệp → PO – Minh |
+| 6 | 21/11/2026 | `hand` và `stove.dish` trong snapshot quán có dạng gì? Khóa `data` của `cook_started`/`dish_ready`/`dish_picked`/`served`/`paid` là gì? | Đã đối chiếu PRD-0 mục D: `hand = null` hoặc `{"order_id","dish_id","base_price"}`; `stoves[].dish = null` hoặc `{"dish_id","order_id"}`; cả hai dùng đúng `order_id = id khách`. | Diệp → PO – Minh |

@@ -74,8 +74,8 @@ Chỉ ở live: `meta` = `tuning[mode]`, `menu` = `tuning.menu`, `events` = các
 |---|---|---|
 | `player.pos [x,z]` | số | khung |
 | `stock {kind: n}` | **tồn vật lý** (chưa trừ giữ chỗ). Kho khả dụng = `stock − Σ reserved` của khách `order_status == "reserved"` | Lát 3 (không trừ khi giữ chỗ), Lát 4 (trừ khi bắt đầu nấu) |
-| `hand` | `null` hoặc `{"dish_id": str, "order_id": str}` **[GĐ]**; `order_id` = id khách | Lát 4 |
-| `stoves[] {id, pos, state, dish, cook_ticks_left, ready_ticks}` | `state ∈ idle / cooking / ready`; `dish` = `null` hoặc `{"dish_id","order_id"}` **[GĐ]**; `ready_ticks` = số tick đã chín (dùng khi `burn_s` khác null, P1 = null) | Lát 4 |
+| `hand` | `null` hoặc `{"order_id": str, "dish_id": str, "base_price": int}`; `order_id` = id khách | Lát 4 |
+| `stoves[] {id, pos, state, dish, cook_ticks_left, ready_ticks}` | `state ∈ idle / cooking / ready`; `dish` = `null` hoặc `{"dish_id": str, "order_id": str}`; `ready_ticks` = số tick đã chín (dùng khi `burn_s` khác null, P1 = null) | Lát 4 |
 | `tables[] {id, pos, customer_id}` | `customer_id` = khách đang ngồi hoặc `null` | khung (suy từ `customers`) |
 | `customers[]` | xem bảng dưới | Lát 3 tạo/bỏ, Lát 4 đổi trạng thái |
 

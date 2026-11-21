@@ -7,6 +7,8 @@ Nhóm viết tiếp (PRD-0 mục F, Quán):
                      ăn xong trả tiền (paid), boa, uy tín, hết ca (quan_end).
 """
 
+import math
+
 from ..ids import sort_by_id
 from .ramp import ramp_velocity
 
@@ -37,8 +39,10 @@ class QuanSim:
                             cook_ticks_left=s.get("cook_ticks_left", 0), ready_ticks=s.get("ready_ticks", 0))
                        for s in self._merge(t["stoves"], scenario.get("stoves", []))]
         self.tables = self._merge(t["tables"], scenario.get("tables", []))
-        # TODO(nhóm): khách dựng sẵn từ scenario (customers[]) và suy ra giữ chỗ (reserved).
         self.customers = [dict(c, reserved=c.get("reserved", {})) for c in scenario.get("customers", [])]
+        self._elapsed_ticks = 0
+        self._next_customer_tick = int(t["first_customer_tick"]) if scenario.get("random_customers", True) else None
+        self._reserve_fixture_customers()
         for e in self.customers:
             ids.reserve(e["id"])
         self.money = 0
@@ -59,9 +63,10 @@ class QuanSim:
 
     def snapshot(self) -> dict:
         occupied = {c["table_id"]: c["id"] for c in self.customers}
+        available_stock = self._available_stock()
         return {
             "player": {"pos": self.pos},
-            "stock": {k: self.stock[k] for k in sorted(self.stock) if self.stock[k] > 0},
+            "stock": {k: available_stock[k] for k in sorted(available_stock) if available_stock[k] > 0},
             "hand": self.hand,
             "stoves": [{k: s.get(k) for k in ("id", "pos", "state", "dish", "cook_ticks_left", "ready_ticks")}
                        for s in self.stoves],
@@ -72,15 +77,166 @@ class QuanSim:
     def step(self, inp):
         events = []
         self.time_left_ticks = max(0, self.time_left_ticks - 1)
-        # TODO(nhóm): giảm kiên nhẫn / nấu / ăn; bếp chín -> ready; xử lý khách theo thứ tự PRD-0 mục F.
+        self._elapsed_ticks += 1
+
+        # Kiên nhẫn bắt đầu giảm ở tick sau khi khách đến/được dựng fixture.
+        for c in sort_by_id(self.customers):
+            if c.get("state", "waiting") == "waiting" and c.get("arrived_tick", 0) != self._elapsed_ticks:
+                c["patience_ticks_left"] = max(0, int(c.get("patience_ticks_left",
+                                                              int(round(self.t["patience_s"] * TICK))) - 1))
+        events.extend(self._remove_impatient_customers())
+
         self._move(inp)
         # TODO(nhóm): tối đa MỘT interact, chọn đối tượng theo (khoảng cách, bếp trước bàn, id).
-        # TODO(nhóm): khách mới theo lịch (first_customer_tick, customer_interval_s), no_dish.
+        if not self.done and self._next_customer_tick is not None and self._elapsed_ticks >= self._next_customer_tick:
+            events.extend(self._seat_scheduled_customer())
+            interval_ticks = int(round(self.t["customer_interval_s"] * TICK))
+            self._next_customer_tick += max(1, interval_ticks)
         if self.time_left_ticks <= 0:
             self.done = True
             self.reason = "time"
+            events.extend(self._close_customers())
             events.append(("quan_end", {"reason": "time", "money": self.money, "earned": self.earned,
                                         "shift_earned": self.shift_earned, "reputation": self.reputation}))
+        return events
+
+    def _reserve_fixture_customers(self):
+        for c in self.customers:
+            dish_id = c.get("dish_id")
+            if dish_id is not None and dish_id not in self.menu:
+                from ..errors import BadInput
+                raise BadInput(f"customers.{c['id']}: dish_id không có trong menu")
+
+            order_status = c.get("order_status", "reserved")
+            if order_status not in ("reserved", "assigned", "unfulfillable", "served"):
+                from ..errors import BadInput
+                raise BadInput(f"customers.{c['id']}: order_status không hợp lệ")
+            reserved = c.get("reserved")
+            if reserved is None:
+                reserved = {}
+            if not isinstance(reserved, dict):
+                from ..errors import BadInput
+                raise BadInput(f"customers.{c['id']}: reserved phải là object")
+            if dish_id is not None and order_status == "reserved" and not reserved:
+                reserved = dict(self.menu[dish_id]["recipe"])
+            if order_status != "reserved":
+                reserved = {}
+
+            for kind, qty in reserved.items():
+                if kind not in self.stock or qty > self.stock.get(kind, 0):
+                    from ..errors import BadInput
+                    raise BadInput(f"customers.{c['id']}: reserved vượt kho khả dụng")
+
+            c["reserved"] = reserved
+            c["dish_id"] = dish_id
+            c["order_tick"] = int(c.get("order_tick", 0))
+            c["order_status"] = order_status
+            c["state"] = c.get("state", "waiting")
+            c["patience_ticks_left"] = int(c.get("patience_ticks_left",
+                                                  int(round(self.t["patience_s"] * TICK))))
+            c["eat_ticks_left"] = int(c.get("eat_ticks_left", 0))
+            c["base_price"] = int(c.get("base_price", self.menu[dish_id]["price"] if dish_id else 0))
+            c["tip"] = int(c.get("tip", 0))
+            c["arrived_tick"] = 0
+
+        totals = {}
+        for c in self.customers:
+            if c["order_status"] == "reserved":
+                for kind, qty in c["reserved"].items():
+                    totals[kind] = totals.get(kind, 0) + qty
+        for kind, qty in totals.items():
+            if qty > self.stock.get(kind, 0):
+                from ..errors import BadInput
+                raise BadInput(f"tổng reserved vượt kho khả dụng: {kind}")
+
+    def _available_stock(self):
+        reserved_totals = {}
+        for c in self.customers:
+            if c.get("order_status") == "reserved":
+                for kind, qty in c.get("reserved", {}).items():
+                    reserved_totals[kind] = reserved_totals.get(kind, 0) + qty
+        return {
+            kind: max(0, qty - reserved_totals.get(kind, 0))
+            for kind, qty in self.stock.items()
+        }
+
+    def _available_dishes(self):
+        available = []
+        available_stock = self._available_stock()
+        for dish_id in sorted(self.menu):
+            recipe = self.menu[dish_id]["recipe"]
+            if all(available_stock.get(kind, 0) >= qty for kind, qty in recipe.items()):
+                available.append(dish_id)
+        return available
+
+    def _seat_scheduled_customer(self):
+        empty_tables = [
+            tb for tb in sort_by_id(self.tables)
+            if not any(c.get("table_id") == tb["id"] for c in self.customers)
+        ]
+        if not empty_tables:
+            return []
+
+        available = self._available_dishes()
+        if not available:
+            return [("no_dish", {"reason": "no_dish"})]
+
+        dish_id = self.rng.get("customers").choice(available)
+        recipe = dict(self.menu[dish_id]["recipe"])
+        table = empty_tables[0]
+        customer_id = self.ids.new("C")
+        customer = {
+            "id": customer_id,
+            "table_id": table["id"],
+            "dish_id": dish_id,
+            "reserved": recipe,
+            "order_tick": self._elapsed_ticks,
+            "order_status": "reserved",
+            "state": "waiting",
+            "patience_ticks_left": int(round(self.t["patience_s"] * TICK)),
+            "eat_ticks_left": 0,
+            "base_price": int(self.menu[dish_id]["price"]),
+            "tip": 0,
+            "arrived_tick": self._elapsed_ticks,
+        }
+        self.customers.append(customer)
+        return [("customer_arrived", {
+            "customer_id": customer_id,
+            "table_id": table["id"],
+            "dish_id": dish_id,
+        })]
+
+    def _release_reserved(self, customer):
+        customer["reserved"] = {}
+
+    def _remove_impatient_customers(self):
+        events = []
+        remaining = []
+        for c in sort_by_id(self.customers):
+            if c.get("state", "waiting") == "waiting" and c.get("patience_ticks_left", 0) <= 0:
+                self._release_reserved(c)
+                self.reputation = max(float(self.t["reputation_min"]),
+                                      self.reputation + float(self.t["left_reputation_delta"]))
+                events.append(("customer_left", {
+                    "customer_id": c["id"],
+                    "table_id": c["table_id"],
+                    "reason": "patience",
+                }))
+            else:
+                remaining.append(c)
+        self.customers = remaining
+        return events
+
+    def _close_customers(self):
+        events = []
+        for c in sort_by_id(self.customers):
+            self._release_reserved(c)
+            events.append(("customer_left", {
+                "customer_id": c["id"],
+                "table_id": c["table_id"],
+                "reason": "closing",
+            }))
+        self.customers = []
         return events
 
     def _move(self, inp):
