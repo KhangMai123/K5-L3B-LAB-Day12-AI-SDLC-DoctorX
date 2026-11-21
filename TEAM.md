@@ -33,7 +33,35 @@
 - **Scrum/Release (Hưng):** nhắc mốc phút 15/20/25/45/55; ghi `docs/standup.md`, `CHANGELOG.md`, nhắc mọi người ghi `docs/ai-usage-log.md`, `docs/retro.md`, `docs/members/<handle>.md`.
 - **Mọi người:** tối thiểu 3 commit có nội dung từ tài khoản của mình; tự viết `docs/members/<handle>.md`.
 
-## Mốc thời gian (60 phút)
+## Chia việc Phase 2 (TICKET-02, Test Contract v1.1)
+
+> Code lõi P2 đã vào `main` chủ yếu qua commit `0a725a8` và `921f3a8` (Hưng). Vì vậy mỗi người **nhận quyền sở hữu** một vùng: đọc lại, viết test theo AC, sửa chỗ lệch ticket, lưu bằng chứng. Cặp dự phòng giữ như P1.
+
+| Người | Vùng phụ trách (file chính) | Trạng thái trên `main` | Việc còn lại | Xong khi |
+|---|---|---|---|---|
+| Phát (P2-A) | `sim/gather.py`: số chuẩn sáng, N5/N6 kèo nèo, `ca_keo` yield 2; cá bơi 1.5 m/s, đổi hướng 120·k, phản xạ mép; sinh 8 đàn đầu ca, trần 12, mỗi 360 tick, trọng số 40/30/30; `fish_spawned`, `age_ticks` | Có code (`0a725a8`) | Test bơi/phản xạ/sinh theo seed; **mở rộng `net`** (chưa có) | Test xanh + `net` khai trong `extensions` |
+| Hưng (P2-B, Scrum) | `sim/gather.py`: Cá Sấu M1/M2 (`from_day`), patrol/chase/recoil, ≤ 1 hit/bước, bỏ `floor(n/2)` LIFO, bất tử 90; `monster_hit`, `faint.cause`; scenario `monsters[]` | Có code (`0a725a8`) | Test hit/recoil đúng tick, ngạt + hit cùng tick; trả lại số chuẩn quán đã đổi ở `921f3a8` (xem hàng Minh) | Test xanh; `CHANGELOG.md`, `docs/standup.md` cập nhật |
+| Minh (P2-C, PO) | `sim/quan.py`: B2, T2–T4, 6 món; lịch khách `120 + 900·k` khi có bàn trống; đóng ca (khách ăn trả ngay, khách chờ rời không trừ uy tín); lọc menu theo `day_plan`; mở rộng `burn` | Có code; `burn` đã khai | **Lỗi:** `game.contract.json` đang `first_customer_tick: 60`, `customer_interval_s: 8` (đổi ở `921f3a8`), lệch ticket (120 / 15 s) → `test_quan_no_dish_at_scheduled_tick` đỏ. Trả về số chuẩn, kiểm lại luật "bàn đầy giữ mốc lịch"; test `burn` | Suite xanh; clarify ghi quyết định |
+| Diệp (P2-D, Integrator) | `sim/day.py`, `runner.py`, `headless.py`: `--mode day --days`, chuỗi pha `day_start → day_plan → phase_start…`, bàn giao kho trong bộ nhớ, Shop (`bought`/`buy_failed`/`shop_end`), `active_upgrades`, `days_completed`; `docs/contracts/` v1.1 | Có code (`0a725a8`) | Rà `day --days 5` (cấp oxy/Máu áp từ Ngày kế, ≤ 20 s); cập nhật hợp đồng v1.1; gộp, chạy smoke trên `main`, gắn tag `phase-2` | Tag `phase-2` trên commit bàn giao |
+| Khang (P2-E, QA) | `inputs.py`, `scenario.py`, `tests/`: `pause`/`shop_done`/`buy`, `paused`/`resumed`; scenario khối `day`; regression P1 với số chuẩn | Có `test_day_p2`, `test_contract_and_cli` | Bổ sung test pause và Shop; smoke tích hợp → `docs/proof/phase-2/integration.*` (chưa có thư mục); `docs/verification/phase-2.md` nối đủ AC | Ma trận AC-P2 có bằng chứng thật |
+| Nhài (P2-F, UI) | `web/index.html`, `live.py`: menu chính, DayIntro/EveningIntro/DayResult/Shop/Summary, pause Esc/P, HUD mới ("Thủy quái!", "Hết hơi!", cần/đã lấy, màu < 25 %), chữ ≥ 18 px @1280×720 | Có màn day/shop (`921f3a8`, `3e05e0c`), asset (`5537cd7`, `e41c329`, `e8fec51`, `685a1b9`) | Đối chiếu từng mục HUD với ticket; ảnh chụp → `docs/proof/phase-2/ui/`; **mở rộng thứ 2** của P2 nếu `net` không kịp (đề xuất Settings & âm thanh) | Chơi trọn 1 Ngày, có ảnh chứng |
+
+## Chia việc Phase 3 (TICKET-03 "Mùa Nước Nổi", Test Contract v1.2)
+
+> Thứ tự tích hợp để `main` luôn chạy: (1) adapter schema kho + test migration → (2) Lặn và Quán song song → (3) HUD → (4) bật v1.2, smoke file + day → (5) mở rộng. Lõi độ tươi đã vào `main` (`0a725a8`, `tests/test_fresh_p3.py`); các lát dưới đây kiểm theo từng quy tắc của ticket.
+
+| Module | Người | File | Test giữ / đổi / thêm | Việc còn lại |
+|---|---|---|---|---|
+| Adapter schema kho v1.2 | **Diệp** | `chonoi/inventory.py`, `contract.py`, `docs/contracts/README.md` | Đổi test kho đếm → kỳ vọng mã 2; thêm test id trùng, `fresh` ngoài [0,100], `{"items":[]}` | Hợp đồng v1.2 (kho cá thể, `spoiled`, `cook_started.items`); ghi breaking change trong `CHANGELOG.md` (cùng Hưng) |
+| Lặn: hao tươi giỏ | **Hưng** + **Phát** | `sim/gather.py` | Thêm: hao 0.5/s từ bước sau, `spoiled` ở 30 đúng một lần theo id, `lost` là mảng cá thể theo LIFO, id `I*` tăng xuyên pha | Test ngưỡng 30 bằng scenario mẫu của ticket; smoke `fresh:100` + cập bến → `quan --ticks 0` so id/kind/fresh |
+| Quán: kho cá thể, giữ theo id, giá theo tươi | **Minh** + **Diệp** | `sim/quan.py` | Đổi: `reserved` là mảng id; thêm: giữ tươi nhất (hòa theo id), giữ lại một lần khi hàng vừa ươn → `unfulfillable`, `base_price = floor(giá × avg fresh/100)`, boa trên giá đã chốt | Test thứ tự trong tick quán (spoiled trước giữ chỗ); **mở rộng `reservations`** (Minh, chưa có) |
+| Day: bàn giao trong bộ nhớ | **Diệp** | `sim/day.py` | Thêm: không hao trong tick chuyển pha, id tăng xuyên Ngày | Smoke `day --days 2` lưu `docs/proof/phase-3/` |
+| HUD độ tươi | **Nhài** | `web/index.html` | Ảnh chụp (UI không ảnh hưởng headless) | Hiện `fresh` dạng thanh/số + nhãn "ươn" ở giỏ và kho quán (hiện mới có 1 chỗ nhắc `fresh`) |
+| QA, migration, bằng chứng | **Khang** | `tests/`, `docs/verification/phase-3.md`, `docs/proof/phase-3/` | Regression P1–P2 còn hiệu lực; ghi lý do mọi test đổi vì luật mới | Ma trận AC-P3 có bằng chứng thật; **mở rộng `current`** (dòng nước lũ, cùng Phát) |
+
+**Mở rộng (nhóm 6 → ≥ 2 mục mỗi phase):** P2 hiện mới khai `burn`; P3 chưa có mục nào. PO (Minh) chốt: P2 thêm `net` (Phát); P3 làm `reservations` (Minh) + `current` (Phát, Khang). Mỗi mục khai trong `extensions`, có test và ghi trong README.
+
+## Mốc thời gian Phase 1 (60 phút)
 
 | Phút | Việc |
 |---|---|

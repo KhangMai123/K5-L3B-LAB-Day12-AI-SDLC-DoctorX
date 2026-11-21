@@ -14,3 +14,12 @@
   - AI không đọc được PRD-0 nên tự đặt dạng `hand`/`stove.dish`; tôi bắt đánh dấu [GĐ] và chuyển PO xác nhận.
 - Điều tôi học được:
   - Chốt tên trường sớm giúp lát 3, lát 4 và UI làm song song mà không phải chờ nhau.
+
+## Phase 2–3
+
+- Được giao (xem `TEAM.md`): P2-D `--mode day`, Shop, chuyển pha, hợp đồng v1.1, tag `phase-2`; P3 adapter schema kho v1.2, bàn giao trong day, cùng Minh làm quán độ tươi.
+- Đã làm (commit): `e41c329` (asset màn 2: bếp idle/nấu/chín, bàn); `202d3a1` (kế hoạch P2, nhánh `p2/plan-diep`); chia việc P2–P3 trong `TEAM.md` (nhánh `p23/team-diep`).
+- Phát hiện khi rà `main`: 116 test, 1 đỏ (`test_quan_no_dish_at_scheduled_tick`) do số khách đổi ở `921f3a8`; mở rộng mới khai `burn`, thiếu mục thứ 2 (P2) và chưa có mục nào (P3); chưa có tag `phase-1`/`phase-2` trên remote.
+- Tôi đã review: commit `0a725a8`, `921f3a8` (số chuẩn quán, danh sách mở rộng).
+- AI sai ở đâu và tôi phát hiện thế nào: *(tự điền)*
+- Điều tôi học được: *(tự điền)*
