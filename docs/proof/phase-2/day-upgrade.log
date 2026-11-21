@@ -1,0 +1,10 @@
+# Shop: mua oxygen Ngày 1 → áp dụng từ Ngày 2
+commit: befa40d
+
+$ python3 -m chonoi.headless --mode day --seed 1 --days 2 --ticks 11000 --scenario ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\up.json --inputs ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\up_in.json --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\up.jsonl --snapshot-every 1
+exit 0 (0.70 s)
+[ĐẠT] bought oxygen cấp 1 giá 200 — {"upgrade": "oxygen", "level": 1, "price": 200, "money": 0}
+[ĐẠT] Shop Ngày 1: upgrades có oxygen 1, active_upgrades chưa đổi
+[ĐẠT] Ngày 2: active_upgrades oxygen 1, oxygen_max_ticks 2700 — oxygen_max_ticks=2700
+
+KẾT LUẬN: ĐẠT

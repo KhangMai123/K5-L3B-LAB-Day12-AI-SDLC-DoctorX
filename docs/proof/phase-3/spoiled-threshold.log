@@ -1,0 +1,8 @@
+# Ngưỡng ươn: scenario mẫu của TICKET-03, một bước
+commit: befa40d
+
+$ python3 -m chonoi.headless --mode gather --seed 1 --ticks 1 --scenario ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\sp.json --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\sp.jsonl
+exit 0 (0.18 s)
+[ĐẠT] event spoiled đúng dòng mẫu của ticket — [{"type": "event", "tick": 1, "phase": "gather", "name": "spoiled", "data": {"item_id": "I1", "kind": "ca_linh", "location": "hold"}}]
+
+KẾT LUẬN: ĐẠT

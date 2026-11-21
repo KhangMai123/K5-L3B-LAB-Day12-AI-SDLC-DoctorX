@@ -1,0 +1,11 @@
+# Smoke tích hợp gather → file kho → quan (tick 0)
+commit: befa40d
+
+$ python3 -m chonoi.headless --mode gather --seed 1 --ticks 600 --scenario ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\g.json --inputs ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\dock.json --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\g.jsonl --inventory-out docs\proof\phase-2\integration.kho.json
+exit 0 (0.12 s)
+[ĐẠT] gather_end docked, inventory khớp file kho (fresh ±0.01) — [{"id": "I1", "kind": "ca_loc", "fresh": 99.99166666666666}, {"id": "I2", "kind": "bong_sung", "fresh": 99.99166666666666}, {"id": "I3", "kind": "bong_sung", "fresh": 99.99166666666666}]
+$ python3 -m chonoi.headless --mode quan --seed 1 --ticks 0 --inventory docs\proof\phase-2\integration.kho.json --out docs\proof\phase-2\integration.quan.jsonl
+exit 0 (0.12 s)
+[ĐẠT] snapshot quán tick 0: stock khớp file (id, kind chính xác; fresh ±0.01)
+
+KẾT LUẬN: ĐẠT

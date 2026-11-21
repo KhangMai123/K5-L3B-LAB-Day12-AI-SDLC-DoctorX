@@ -1,0 +1,10 @@
+# bench_cmd --seed 42 --duration 30
+commit: befa40d
+
+$ python3 -m chonoi.bench --seed 42 --duration 30 --out docs\proof\phase-4\bench.json
+exit 0 (33.23 s)
+{"avg_fps": 2541.8469419346243, "p1_low_fps": 461.6204911663788, "frames": 76256, "measured_s": 30.00023279999732, "load_ms": 29}
+[ĐẠT] đủ 5 trường
+[ĐẠT] mốc báo cáo avg ≥ 60, 1% low ≥ 30, load ≤ 10 s — đo phía Python (sim + snapshot + JSON), không gồm vẽ canvas
+
+KẾT LUẬN: ĐẠT

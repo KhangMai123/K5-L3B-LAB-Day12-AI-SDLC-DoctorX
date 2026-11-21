@@ -1,0 +1,12 @@
+# soak_cmd --seed 7 --days 10 (chạy 2 lần, so tính lặp)
+commit: befa40d
+
+$ python3 -m chonoi.soak --seed 7 --days 10 --out docs\proof\phase-4\soak.json
+exit 0 (1.24 s)
+$ python3 -m chonoi.soak --seed 7 --days 10 --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\soak2.json
+exit 0 (1.34 s)
+[ĐẠT] days_completed = days = 10, crashes = 0
+[ĐẠT] results[] có 10 mục day/earned/reputation/score
+[ĐẠT] hai lần chạy giống nhau ở trường gameplay
+
+KẾT LUẬN: ĐẠT

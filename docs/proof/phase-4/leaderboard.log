@@ -1,0 +1,15 @@
+# Mở rộng leaderboard: 5 Ngày chuẩn → 1 mục, xuất bảng qua run_cmd
+commit: befa40d
+
+$ python3 -m chonoi.headless --mode day --seed 42 --days 5 --ticks 120000 --snapshot-every 5000 --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\lb.jsonl --leaderboard ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\store.json --player-name Út Sen
+exit 0 (4.67 s)
+$ python3 -m chonoi.live --mode gather --export-leaderboard docs\proof\phase-4\leaderboard.export.json --leaderboard ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\store.json
+exit 0 (0.25 s)
+{"entries": [{"name": "Út Sen", "score": 300, "days_completed": 5, "seed": 42}]}
+[ĐẠT] đúng một mục, days_completed 5, seed 42
+$ python3 -m chonoi.headless --mode gather --seed 1 --ticks 1 --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\x.jsonl --leaderboard ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\store.json --player-name A
+exit 2 (0.11 s)
+stderr: đầu vào sai: --leaderboard chỉ dùng với --mode day
+[ĐẠT] sai mode → mã 2
+
+KẾT LUẬN: ĐẠT

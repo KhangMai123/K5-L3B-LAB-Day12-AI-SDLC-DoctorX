@@ -1,0 +1,18 @@
+# day --days 1: chuỗi pha, kết thúc khi Shop đóng
+commit: befa40d
+
+$ python3 -m chonoi.headless --mode day --seed 1 --days 1 --ticks 22200 --out ..\..\AppData\Local\Temp\chonoi-proof-h0efqfux\d1.jsonl
+exit 0 (0.94 s)
+  tick     0  phase=gather day_start
+  tick     0  phase=gather day_plan
+  tick     0  phase=gather phase_start
+  tick 10800  phase=gather gather_end
+  tick 10800  phase=quan   phase_start
+  tick 21600  phase=quan   quan_end
+  tick 21600  phase=shop   phase_start
+  tick 22200  phase=shop   shop_end
+[ĐẠT] end: reason days_complete, days_completed 1 — ticks=22200
+[ĐẠT] một Ngày ≤ 22.200 tick và chạy ≤ 20 s — 22200 tick, 0.94 s
+[ĐẠT] day_plan D1 đúng ticket
+
+KẾT LUẬN: ĐẠT
