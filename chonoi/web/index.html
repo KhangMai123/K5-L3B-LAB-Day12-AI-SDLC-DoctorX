@@ -647,6 +647,10 @@ function utSen(px, py, s, heading, flicker) {
   ctx.fillStyle = "#fff"; for (let i = 0; i < 3; i++) ctx.fillRect(.5 * s + i * .17 * s, -.42 * s, .07 * s, .14 * s);
   ctx.restore();
 }
+// thủy quái gần: cùng ngưỡng phát hiện với luật chase (≤ 10 m, người chơi ở d ≥ 10)
+function monsterNear(p) {
+  return !!(p && p.pos && (snap.monsters || []).find((m) => dist(p.pos, m.pos) <= 10 && p.pos[1] >= 10));
+}
 function gatherPrompt(meta, p) {
   if (!p || !p.pos) return null;
   if (meta.dock_pos && meta.dock_radius !== undefined && dist(p.pos, meta.dock_pos) <= meta.dock_radius)
@@ -665,9 +669,9 @@ function gatherPrompt(meta, p) {
       if (p.catch_cd_ticks > 0) return { t: "Đang lấy hơi để bắt tiếp…" };
       return { t: `Space: bắt ${kn(f.kind)} (+${need})`, act: true };
     }
+    if (p.oxygen_max_ticks && p.oxygen_ticks === 0) return { t: "🫧 Hết hơi! Nổi lên ngay!", warn: true };
     if (p.oxygen_max_ticks && p.oxygen_ticks < p.oxygen_max_ticks * 0.25) return { t: "Sắp hết oxy, nổi lên thở!", warn: true };
-    const nearM = (snap.monsters || []).find((m) => dist(p.pos, m.pos) <= 10 && p.pos[1] >= 10);
-    if (nearM) return { t: "Thủy quái! Tránh xa!", warn: true };
+    if (monsterNear(p)) return { t: "🐊 Thủy quái! Tránh xa!", warn: true };
   }
   if (snap.current) return { t: `🌊 Dòng lũ ${snap.current.direction > 0 ? "→" : "←"} còn ${secs(snap.current.ticks_left)}s`, warn: true };
   return null;
@@ -824,6 +828,10 @@ function drawGather(w, h) {
     }
   }
   text("WASD bơi · E hái / cập bến · Space bắt cá · R chơi lại · M Má Tư · L nhật ký", w - 12, h - 14, { size: 12, align: "right", color: "#bfa98a" });
+  if (monsterNear(p)) {  // viền tím nhấp nháy khi thủy quái gần
+    ctx.strokeStyle = `rgba(179,136,255,${0.6 + 0.4 * Math.sin((snap.tick || 0) * 0.3)})`; ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, w - 8, h - 8);
+  }
   prompt(gatherPrompt(meta, p), w, h - bottom - 26);
   toasts(w, 74);
 }

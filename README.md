@@ -13,27 +13,54 @@ Cách làm việc kỹ thuật là **tự do** (push thẳng, nhánh + PR, pair,
 4. **Gắn tag** `phase-1` … `phase-4` đúng hạn; chạy được tại từng tag.
 5. **Ghi chép tối thiểu:** `docs/verification/phase-n.md`, `docs/clarify.md`, `docs/ai-usage-log.md`, `docs/retro.md`, `docs/members/<handle>.md`.
 
-## Bắt đầu nhanh
+## Bắt đầu nhanh — Quán Ăn Chợ Nổi v1.0.0 (nhóm DoctorX)
 
-Trên macOS/Linux, chạy các lệnh sau với Python 3.12 (phiên bản CI dùng).
+**Yêu cầu môi trường:** Python **3.10+** (CI và nhóm dùng 3.12), chỉ thư viện chuẩn — không cần `pip install`. Git để clone. Trình duyệt hiện đại (Chrome/Firefox/Safari/Edge) để chơi; màn hình chuẩn 1280×720.
+
+**Từ clone sạch, 3 lệnh (macOS / Linux):**
 
 ```bash
 git clone https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX.git && cd K5-L3B-LAB-Day12-AI-SDLC-DoctorX
-PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
-python3 -m chonoi.live --mode day --days 1
-# hoặc từng buổi: --mode gather | --mode quan
-# tùy chọn Phase 4:
-# python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json
-# python3 -m chonoi.soak --seed 7 --days 10 --out soak.json
+PYTHONPATH=tests:. python3 -m unittest discover -s tests      # (tùy chọn) bộ test
+python3 -m chonoi.live --mode day --days 5                     # chơi: mở địa chỉ in ra (mặc định http://127.0.0.1:8000/)
 ```
 
-Mở địa chỉ server in ra. `--mode day` chạy cả vòng Ngày (sáng → quán → shop) trong một cửa sổ. Nhấn **WASD** / **mũi tên** để di chuyển, **E** để hái / cập bến / bếp-bàn (shop: xong), **Space** bắt cá, **1/2** mua oxy/Máu ở shop, **Enter** xong shop, **R** chơi lại.
+Bản đóng gói ở GitHub Release `v1.0.0` (`chonoi-doctorx-v1.0.0.zip`): giải nén, `cd` vào thư mục rồi chạy lệnh thứ 3.
+Windows: dùng `python` thay `python3`, và `PYTHONPATH=tests;.` (xem `AGENTS.md` nếu smoke test cần lệnh `python3`).
 
-Điểm được tính bằng `earned + 100 * floor(reputation)`. `earned` là tổng tiền đã thu trong lượt, tính bằng nghìn đồng.
+### Điều khiển
 
-File chuyển nguyên liệu từ Lặn & Hái sang Mở Quán theo [schema kho](docs/contracts/README.md#1-file-kho-gather--quan), với [file JSON mẫu](docs/contracts/inventory.sample.json).
+| Cảnh | Phím |
+|---|---|
+| Lặn & Hái | **WASD / mũi tên** bơi · **E** hái (ở mặt nước) / cập bến · **Space** bắt cá (dưới nước) |
+| Mở Quán | **WASD / mũi tên** đi · **E** nấu ở bếp / bưng món / dọn cho khách (đối tượng gần nhất) |
+| Shop | **1** mua Bình oxy · **2** mua Áo phao · **3** mua Vợt hút cá · **E / Enter** đóng Shop |
+| Mọi lúc | **Esc / P** tạm dừng · **H** tương phản cao · **M** bật/tắt Má Tư · **L** nhật ký event · **R** chơi lại |
 
-Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headless --mode gather|quan …`) để được chạy và chấm tự động. **Công nghệ không ràng buộc**: khung Python trong `chonoi/` chỉ là gợi ý, chi tiết ở [`docs/STARTER.md`](docs/STARTER.md).
+Cảnh báo dễ nhận biết (có chữ + biểu tượng, thử được ở chế độ tương phản cao **H**): "Sắp hết oxy" khi oxy < 25 % và "🫧 Hết hơi!" khi oxy cạn, "🐊 Thủy quái! Tránh xa!" + viền tím nhấp nháy khi Cá Sấu trong 10 m, "⚠ sắp giận" ở bàn khi kiên nhẫn < 25 %, 🌊 báo trước dòng lũ (kèm âm thanh và phụ đề).
+
+### Lệnh cho máy chấm / kiểm chứng
+
+| Việc | Lệnh |
+|---|---|
+| Test | `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v` |
+| Headless | `python3 -m chonoi.headless --mode gather\|quan\|day --seed 1 --ticks 600 --out out.jsonl [--days N] [--scenario f] [--inputs f] [--inventory f] [--inventory-out f]` |
+| Một Ngày | `python3 -m chonoi.headless --mode day --seed 1 --days 1 --ticks 22200 --out day.jsonl` |
+| Benchmark | `python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json` |
+| Soak | `python3 -m chonoi.soak --seed 7 --days 10 --out soak.json` |
+| Xếp hạng | `python3 -m chonoi.headless --mode day --days 5 --seed 42 --ticks 120000 --out d.jsonl --leaderboard store.json --player-name "Út Sen"` rồi `python3 -m chonoi.live --mode gather --export-leaderboard out.json --leaderboard store.json` |
+| Tạo lại bằng chứng | `python3 tools/make_proof.py` → `docs/proof/phase-{2,3,4}/` |
+
+Điểm = `earned + 100 × floor(reputation)`; tiền tính theo nghìn đồng. File kho v1.2 là mảng cá thể `{"items":[{"id","kind","fresh"}]}` — xem [hợp đồng](docs/contracts/README.md) và [file mẫu](docs/contracts/inventory.sample.json).
+
+### Giới hạn đã biết
+
+- `bench` đo phía Python của mỗi khung (bước sim + snapshot + JSON như `GET /state`); phần vẽ canvas chạy trong trình duyệt nên **không** đo FPS GPU. Số liệu: `docs/proof/phase-4/bench.json`.
+- Cửa sổ chơi là bản canvas 2D chạy trong trình duyệt qua server cục bộ, không phải ứng dụng cài đặt.
+- Bảng xếp hạng chỉ ghi qua headless `--mode day --days 5` (cặp `--leaderboard` + `--player-name`); cửa sổ chơi chưa có ô nhập tên.
+- Mở rộng **Khách đặt trước** (`reservations`), Lao xua, Rắn Hổ Mây, Chợ Chú Sáu, Sổ tay & Cá Hô, Settings âm lượng: **chưa làm**.
+- Asset nhân vật quán Phase 2 còn thiếu ghi nguồn/giấy phép chi tiết, xem `CREDITS.md`.
+
 
 ## Tự do sáng tạo
 
@@ -41,11 +68,23 @@ Ngoài phần đề yêu cầu, nhóm được **thêm** nhân vật, loài cá/
 
 ## Sáng tạo của nhóm
 
-### Mở rộng #2: Cháy món (`burn`)
+### Mở rộng đã làm (khai trong `extensions` của `game.contract.json`)
+
+| Mã | Mở rộng (ticket) | Bằng chứng |
+|---|---|---|
+| `burn` | Cháy món (P2) | `tests/test_quan_p1.py`, `quan.burn_s: 20` |
+| `net` | Vợt hút cá: cấp 1 250k/4 m/2 đàn, cấp 2 500k/6 m/3 đàn (P2) | `tests/test_ext_net.py` |
+| `current` | Dòng nước lũ: mỗi 1800 tick, báo trước 120 tick (chữ + 🌊 + âm thanh), 480 tick, +1.5 m/s khi d ≥ 10 (P3) | `tests/test_ext_current.py` |
+| `leaderboard` | Bảng xếp hạng cục bộ top 10 (P4) | `tests/test_ext_leaderboard.py`, `docs/proof/phase-4/leaderboard.log` |
+| — | Phụ đề SFX: mỗi âm thanh đã có (tiếng báo dòng lũ) hiện phụ đề 2.5 s, kể cả khi tắt tiếng (P4) | `chonoi/web/index.html` (`sfxSubtitle`) |
+
+Mọi mở rộng đọc số từ `game.contract.json`; `net` cấp 0 giữ nguyên luật bắt cá lõi; `current` tắt được bằng `gather.random_current:false`; bảng xếp hạng không đổi JSONL (có test so từng byte).
+
+### Chi tiết: Cháy món (`burn`)
 - Khai `extensions: ["burn"]`, `quan.burn_s: 20`. Món ready quá 1200 tick bị cháy (`dish_burnt`), nguyên liệu mất, thử giữ lại đơn.
 - Chỉ ảnh hưởng quán khi mở rộng bật; số liệu từ `game.contract.json`.
 
-### Mở rộng #1: Lời Má Tư (Nhài, `client/ui`)
+### Sáng tạo: Lời Má Tư (Nhài, `client/ui`)
 Má Tư hiện ở góc dưới bên trái cửa sổ chơi và nói giọng Nam Bộ theo diễn biến:
 - **Mở đầu mỗi buổi:** dặn Út Sen lặn, hoặc giục mở quán.
 - **Buổi sáng:** phản ứng khi hết hơi, ngạt, ngất, giỏ đầy, hái bông điên điển hay bông súng, bắt được cá linh hay cá lóc, cập bến.
