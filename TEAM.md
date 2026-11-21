@@ -9,7 +9,7 @@
 | Vũ Quang Minh | … | `sim/quan` — Lát 3: khách, giữ chỗ nguyên liệu, kiên nhẫn | PO | Lát 4 (Diệp) |
 | Hoàng Minh Diệp | HoangMinhDiep | `sim/quan` — Lát 4: bếp, bưng, phục vụ, tiền, uy tín | Integrator (trưởng nhóm) | Lát 3 (Minh) |
 | Phùng Thị Nhài | nhaipt342k4 | `client/ui` — HUD 2 buổi, `chonoi/web/`, `live.py`; mở rộng #1 | — | UI + chơi thử |
-| Mai Khang | KhangMai123 | `qa` — `tests/`, ma trận truy vết, `docs/proof/`; mở rộng #2 | QA lead | `scenario.py` / `contract.py` |
+| Mai Xuân Khang | KhangMai123 | `qa` — `tests/`, ma trận truy vết, `docs/proof/`; mở rộng #2 | QA lead | `scenario.py` / `contract.py` |
 
 > Mỗi người tự thay `…` bằng GitHub handle của mình (commit đầu tiên). `python3 tools/check_team.py` phải báo OK.
 
