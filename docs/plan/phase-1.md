@@ -5,7 +5,7 @@
   - [ ] Lát 1 — bơi, oxy, ngạt, ngất, giỏ — Hưng — khung sẵn có
   - [ ] Lát 2 — hái, bắt cá, cập bến, ghi kho — Phát — API giỏ của lát 1
   - [ ] Lát 3 — khách, giữ chỗ, kiên nhẫn, no_dish — Minh — kho mẫu `docs/contracts/inventory.sample.json`
-  - [ ] Lát 4 — bếp, bưng, phục vụ, tiền, uy tín, quan_end — Diệp — trạng thái khách/đơn của lát 3
+  - [x] Lát 4 — bếp, bưng, phục vụ, tiền, uy tín, quan_end — Diệp — trạng thái khách/đơn của lát 3
   - [ ] HUD 2 buổi + mở rộng #1 — Nhài — snapshot của các lát
   - [ ] Test theo AC, smoke, ma trận truy vết, proof + mở rộng #2 — Khang — PRD
   - [x] Hợp đồng kho + sự kiện sim↔UI trong `docs/contracts/` — Diệp — trước phút 15 (xong; mục [GĐ] chờ PO xác nhận, clarify #6)

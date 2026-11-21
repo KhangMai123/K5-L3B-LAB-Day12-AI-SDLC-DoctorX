@@ -6,7 +6,7 @@
   - Chốt hợp đồng tích hợp `docs/contracts/README.md`: file kho, giao diện sim↔UI, danh sách sự kiện (commit `5e9598f`).
   - Gộp `main` (HUD của Nhài) vào nhánh làm việc; chạy 32 test (xanh) + smoke 2 tiến trình gather → kho → quan, kiểm tất định.
   - Kiểm `team`/`team_size` khớp `TEAM.md`; ghi câu hỏi mở clarify #6 cho PO.
-  - Lát 4: _chưa làm_ (chờ lát 3 chốt trạng thái khách/đơn).
+  - Lát 4 trên nền lát 3 của Minh: `_interact` (gần nhất, bếp trước bàn, id), `_cook`, `_pick` (carry_limit 1), `_serve` (boa theo kiên nhẫn), `_pay`, `_rep` (kẹp), hủy món khi khách bỏ đi; 12 test `tests/test_quan_lat4.py`; proof `docs/proof/phase-1/lat4/`.
 - Tôi đã review (kèm link):
   - Đối chiếu tên trường HUD (`chonoi/web/index.html`, PR #1 của Nhài) với snapshot của khung.
 - AI sai ở đâu và tôi phát hiện thế nào:

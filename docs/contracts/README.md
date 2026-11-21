@@ -92,10 +92,10 @@ Chỉ ở live: `meta` = `tuning[mode]`, `menu` = `tuning.menu`, `events` = các
 | `order_tick` | int | tick đặt món — Lát 4 lấy đơn `reserved` **cũ nhất** theo (`order_tick`, `id`) | Lát 3 |
 | `patience_ticks_left` | int | `patience_s × 60` lúc đến, giảm từ **bước sau**; dừng khi `eating`; về 0 → `customer_left` patience | Lát 3 |
 | `eat_ticks_left` | int | `eat_s × 60` lúc `served`, về 0 → `paid` | Lát 4 |
-| `price` | int | giá món, đặt khi `served` | Lát 4 |
-| `tip` | int | `floor(price × tip_rate)` nếu `patience_ticks_left / (patience_s×60) ≥ tip_min_patience_ratio`, ngược lại 0; đặt khi `served` | Lát 4 |
+| `base_price` | int | giá món (PRD-0 mục D), đặt lúc khách đến; `hand.base_price` mang theo khi bưng | Lát 3 đặt, Lát 4 dùng |
+| `tip` | int | `floor(base_price × tip_rate)` nếu `patience_ticks_left / (patience_s×60) ≥ tip_min_patience_ratio`, ngược lại 0; đặt khi `served` | Lát 4 |
 
-Scenario thiếu `reserved` cho khách `order_status == "reserved"` → Lát 3 **suy ra** = công thức `dish_id` (clarify #5). Khách `eating` thiếu `price`/`tip`/`eat_ticks_left`, hoặc tổng giữ chỗ vượt `stock` → mã 2 (Khang thêm vào `scenario.py`).
+Scenario thiếu `reserved` cho khách `order_status == "reserved"` → Lát 3 **suy ra** = công thức `dish_id` (clarify #5). Khách `eating` thiếu `base_price`/`tip`/`eat_ticks_left`, hoặc tổng giữ chỗ vượt `stock` → mã 2 (Khang thêm vào `scenario.py`).
 
 **Ranh giới hàm trong `quan.py`** (tránh xung đột gộp): Lát 3 viết `_tick_customers()`, `_spawn_customer()`, `_leave(c, reason)`, `_available()`; Lát 4 viết `_tick_stoves()`, `_tick_eating()`, `_interact()`, `_cook()`, `_pick()`, `_serve()`, `_pay()`, `_rep(delta)`. `step()` chỉ gọi các hàm này theo thứ tự PRD-0 mục F (Diệp gộp).
 
@@ -131,7 +131,7 @@ Dòng JSONL: `{"type":"event","tick":k+1,"phase":…,"name":…,"data":{…}}`. 
 | `dish_ready` | `{"stove_id", "customer_id", "dish_id"}` | Lát 4 | `cook_ticks_left` về 0 → bếp `ready` |
 | `dish_picked` | `{"stove_id", "customer_id", "dish_id"}` | Lát 4 | interact bếp `ready`, tay trống (`carry_limit` = 1) |
 | `served` | `{"customer_id", "table_id", "dish_id", "tip": int}` | Lát 4 | interact bàn có khách `waiting` đúng `hand.order_id` |
-| `paid` | `{"customer_id", "table_id", "amount": int, "tip": int, "money": int, "reputation": float}` | Lát 4 | `eat_ticks_left` về 0; `amount = price + tip`; `money` = tiền **sau** khi cộng; bàn được giải phóng |
+| `paid` | `{"customer_id", "table_id", "amount": int, "tip": int, "money": int, "reputation": float}` | Lát 4 | `eat_ticks_left` về 0; `amount = base_price + tip`; `money` = tiền **sau** khi cộng; có boa → uy tín `+tip_reputation` **[GĐ, clarify #7]**; `reputation` = uy tín sau khi đổi; bàn được giải phóng |
 | `quan_end` | `{"reason":"time", "money", "earned", "shift_earned", "reputation"}` | khung + Lát 4 | hết ca; luôn là sự kiện cuối (sau các `customer_left` closing) |
 
 Thứ tự id trong một bước: nhiều thực thể cùng phát một loại sự kiện → theo `sort_by_id` (clarify #2).
@@ -143,3 +143,5 @@ Thứ tự id trong một bước: nhiều thực thể cùng phát một loại
 | Ngày | Ai | Thay đổi | Lý do |
 |---|---|---|---|
 | 21/11/2026 | Diệp | Bản chốt phút 15: kho, sim↔UI, sự kiện | Kickoff Phase 1 |
+| 21/11/2026 | Minh | `hand` thêm `base_price`; bỏ [GĐ] cho `hand`/`stove.dish` | Đối chiếu PRD-0 mục D |
+| 21/11/2026 | Diệp | `price` → `base_price`; ghi rõ luật boa/uy tín của `paid` | Khớp code lát 3 + lát 4 |
