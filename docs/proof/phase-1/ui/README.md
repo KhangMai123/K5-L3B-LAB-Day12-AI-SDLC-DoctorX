@@ -22,5 +22,23 @@ Chuỗi sự kiện thật:
 
 Ảnh 3 cho thấy lỗi gợi ý "B1: chưa có đơn để nấu" lúc đang bưng món. Lỗi đã sửa ở `640d03e`: gợi ý mới là "Đang bưng …, ra bàn T1 dọn cho khách".
 
-## Buổi sáng: snapshot giả
-[gather-hud.png](gather-hud.png): lát 1 và 2 chưa gộp, nên oxy, Máu, giỏ và sự kiện `fish_caught` trong ảnh là **dữ liệu giả** dựng tay theo đúng tên trường của Test Contract. Ảnh dùng để kiểm bố cục, hình cá và trang trí. Sẽ chụp lại bằng số thật khi lát 1 và 2 vào `main`.
+## Buổi sáng: số thật từ sim của lát 1 và 2
+Ảnh chụp sau khi Khang gộp `main` (lát 1 của Hưng, lát 2 của Phát) vào nhánh (`a18541f`). Cách tạo: chạy `runner.Session("gather", …, seed 5)` với preset mặc định. Một bot lái Út Sen lặn tới F1 và F2 bắt cá, ở dưới nước tới lúc hết oxy, rồi nổi lên hái N1 và về bến. Trước đó, ảnh buổi sáng dùng snapshot giả; nay đã thay bằng các ảnh dưới đây.
+
+Chuỗi sự kiện thật:
+- t26 `dive`
+- t204 `fish_caught` (cá linh ×3)
+- t441 `fish_caught` (cá lóc)
+- t1825 `oxygen_empty`
+- t1884 `choke`
+- t1908 `surface`
+- t1917 `gather` (điên điển)
+- t2067 `gather_end` (docked)
+
+| Ảnh | Tick | HUD cho thấy |
+|---|---|---|
+| [gather-1-bat-ca.png](gather-1-bat-ca.png) | 205 | Vừa bắt bầy cá linh: giỏ 3/12, đàn F1 biến mất, hồi chiêu bắt, thông báo + Má Tư |
+| [gather-2-sap-het-oxy.png](gather-2-sap-het-oxy.png) | 1466 | Oxy 6/30 s chuyển đỏ, viền đỏ nhấp nháy, gợi ý "Sắp hết oxy, nổi lên thở!" |
+| [gather-3-cap-ben.png](gather-3-cap-ben.png) | 2067 | Máu ♥♥♡ sau khi ngạt; màn kết thúc "cập bến" liệt kê đồ mang về quán; Má Tư khen |
+
+Ảnh 3 cho thấy gợi ý "E: cập bến" vẫn hiện sau khi buổi đã kết thúc. Lỗi đã sửa: hết buổi thì ẩn gợi ý phím.

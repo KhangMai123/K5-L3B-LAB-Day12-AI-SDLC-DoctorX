@@ -271,7 +271,7 @@ function bar(x, y, w, h, frac, color, label) {
 }
 function hudBand(y, h) { ctx.fillStyle = "rgba(20,14,8,.78)"; ctx.fillRect(0, y, innerWidth, h); }
 function prompt(p, w, y) {
-  if (!p) return;
+  if (!p || snap.finished) return;  // hết buổi thì không gợi ý phím nữa
   ctx.font = "600 15px system-ui, sans-serif";
   const tw = ctx.measureText(p.t).width + 28;
   rrect(w / 2 - tw / 2, y - 15, tw, 30, 15, p.act ? "rgba(255,214,102,.95)" : p.warn ? "rgba(229,57,53,.9)" : "rgba(0,0,0,.6)");
