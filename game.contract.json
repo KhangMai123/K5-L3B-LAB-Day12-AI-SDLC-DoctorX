@@ -7,7 +7,7 @@
   "headless_cmd": "python3 -m chonoi.headless",
   "bench_cmd": "python3 -m chonoi.bench",
   "soak_cmd": "python3 -m chonoi.soak",
-  "extensions": ["burn"],
+  "extensions": ["burn", "net"],
   "tuning": {
     "tick_hz": 60,
     "gather": {
@@ -184,6 +184,10 @@
         "hp": [
           {"level": 1, "price": 250, "hp_max": 4},
           {"level": 2, "price": 500, "hp_max": 5}
+        ],
+        "net": [
+          {"level": 1, "price": 250, "catch_radius": 4.0, "max_schools": 2},
+          {"level": 2, "price": 500, "catch_radius": 6.0, "max_schools": 3}
         ]
       }
     },

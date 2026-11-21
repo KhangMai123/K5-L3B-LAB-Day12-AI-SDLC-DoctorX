@@ -263,8 +263,42 @@ class GatherSim:
         node["regrow_ticks"] = int(round(self.t["regrow_s"] * TICK))
         events.append(("gather", {"node_id": node["id"], "kind": node["kind"], "amount": count}))
 
+    def _net_row(self):
+        """Mở rộng `net`: dòng cấp đang áp dụng; None = cấp 0, dùng luật gần nhất của lõi."""
+        lvl = int(self.active_upgrades.get("net", 0) or 0)
+        rows = self.tuning.get("shop", {}).get("upgrades", {}).get("net", [])
+        return next((r for r in rows if r["level"] == lvl), None) if lvl > 0 else None
+
+    def _catch_net(self, events, fish_snapshot, row):
+        """Từ cấp 1: duyệt đàn trong catch_radius theo id, tối đa max_schools đàn bắt thành công.
+        Đàn thiếu chỗ phát hold_full, được giữ lại và xét đàn kế; có đàn bắt được mới đặt hồi."""
+        caught = 0
+        for fish in sort_by_id(fish_snapshot):
+            if caught >= int(row["max_schools"]):
+                break
+            if math.dist(self.pos, fish["pos"]) > row["catch_radius"]:
+                continue
+            live = next((f for f in self.fish if f["id"] == fish["id"]), None)
+            if live is None:
+                continue
+            count = self.t["fish_yield"][live["kind"]]
+            if not self.can_hold(count):
+                events.append(("hold_full", {"action": "catch", "fish_id": live["id"],
+                                             "required": count, "free": self.free_hold_slots()}))
+                continue
+            self.push_hold([live["kind"]] * count)
+            self.fish.remove(live)
+            caught += 1
+            events.append(("fish_caught", {"fish_id": live["id"], "kind": live["kind"], "yield": count}))
+        if caught:
+            self.catch_cd_ticks = int(round(self.t["catch_cooldown_s"] * TICK))
+
     def _catch(self, events, fish_snapshot):
         if self._at_surface() or self.catch_cd_ticks > 0:
+            return
+        row = self._net_row()
+        if row is not None:
+            self._catch_net(events, fish_snapshot, row)
             return
         fish = self._nearest_in_radius(fish_snapshot, self.t["catch_radius"])
         if fish is None:

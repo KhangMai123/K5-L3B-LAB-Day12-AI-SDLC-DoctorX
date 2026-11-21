@@ -256,14 +256,19 @@ def _validate_day_plan(plan, menu):
             raise BadInput(f"day_plan[{i}].ingredients không khớp công thức × suất")
 
 
-def _validate_shop(shop):
+def _validate_shop(shop, extensions=()):
     if not isinstance(shop, dict):
         raise BadInput("tuning.shop phải là object")
     _int_between("shop.max_ticks", shop.get("max_ticks"), 1, 10_000)
     upgrades = shop.get("upgrades")
     if not isinstance(upgrades, dict) or "oxygen" not in upgrades or "hp" not in upgrades:
         raise BadInput("tuning.shop.upgrades phải có oxygen và hp")
-    for name, keys in (("oxygen", ("level", "price", "oxygen_max_s")), ("hp", ("level", "price", "hp_max"))):
+    specs = [("oxygen", ("level", "price", "oxygen_max_s")), ("hp", ("level", "price", "hp_max"))]
+    if "net" in extensions:
+        if "net" not in upgrades:
+            raise BadInput("extensions có net nhưng thiếu tuning.shop.upgrades.net")
+        specs.append(("net", ("level", "price", "catch_radius", "max_schools")))
+    for name, keys in specs:
         arr = upgrades[name]
         if not isinstance(arr, list) or len(arr) != 2:
             raise BadInput(f"shop.upgrades.{name} phải có đúng 2 cấp")
@@ -291,7 +296,7 @@ def validate_tuning(t, extensions=None):
     _validate_quan(q, extensions)
     _validate_menu(menu)
     _validate_day_plan(t.get("day_plan"), menu)
-    _validate_shop(t.get("shop"))
+    _validate_shop(t.get("shop"), extensions)
     fr = t.get("freshness")
     if not isinstance(fr, dict):
         raise BadInput("tuning.freshness phải là object")
