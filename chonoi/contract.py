@@ -1,15 +1,22 @@
 """Đọc game.contract.json và kiểm dải hợp lệ của tuning P1 (PRD mục 13.2, Test Contract)."""
 
 import json
+import math
 import os
 
 from .errors import BadInput
 
 DEFAULT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "game.contract.json")
 
+REQUIRED_RECIPES = {
+    "ca_loc_nuong_trui": {"ca_loc": 1},
+    "goi_bong_sung": {"bong_sung": 2},
+    "lau_ca_linh_dien_dien": {"ca_linh": 3, "bong_dien_dien": 1},
+}
+
 
 def _num(v):
-    return isinstance(v, (int, float)) and not isinstance(v, bool)
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
 def _between(name, v, lo, hi):
@@ -23,6 +30,16 @@ def load_contract(path=DEFAULT_PATH) -> dict:
             c = json.load(f)
     except (OSError, ValueError) as e:
         raise BadInput(f"không đọc được {path}: {e}")
+    if not isinstance(c, dict):
+        raise BadInput("game.contract.json phải là object")
+    if c.get("contract_version") != "1.0":
+        raise BadInput(f"contract_version phải là '1.0', đang là {c.get('contract_version')!r}")
+    for key in ("team", "headless_cmd", "run_cmd", "build_cmd"):
+        if not isinstance(c.get(key), str) or not c[key].strip():
+            raise BadInput(f"thiếu hoặc sai {key} trong game.contract.json")
+    ts = c.get("team_size")
+    if isinstance(ts, bool) or not isinstance(ts, int) or ts <= 0:
+        raise BadInput(f"team_size phải là số nguyên dương, đang là {ts!r}")
     validate_tuning(c.get("tuning"))
     return c
 
@@ -112,6 +129,8 @@ def _validate_gather(g):
 def validate_tuning(t):
     if not isinstance(t, dict):
         raise BadInput("thiếu khối tuning")
+    if t.get("tick_hz") != 60:
+        raise BadInput(f"tuning.tick_hz phải là 60, đang là {t.get('tick_hz')!r}")
     g, q, menu = t.get("gather"), t.get("quan"), t.get("menu")
     if not isinstance(g, dict) or not isinstance(q, dict) or not isinstance(menu, dict):
         raise BadInput("tuning phải có gather, quan, menu")
@@ -119,6 +138,16 @@ def validate_tuning(t):
     # Quán: dải hợp lệ P1 (PRD mục 13.2)
     _between("quan.duration_s", q.get("duration_s"), 60, 600)
     _bounds("quan", q.get("bounds"), ("x", "z"))
+    qb = q["bounds"]
+    _pos_in("quan.start_pos", q.get("start_pos"), qb, ("x", "z"))
+    stoves = q.get("stoves")
+    if not isinstance(stoves, list) or len(stoves) != 1 or not isinstance(stoves[0], dict) or stoves[0].get("id") != "B1":
+        raise BadInput("tuning.quan.stoves phải có đúng 1 bếp 'B1'")
+    _pos_in("quan.stoves.B1.pos", stoves[0].get("pos"), qb, ("x", "z"))
+    tables = q.get("tables")
+    if not isinstance(tables, list) or len(tables) != 1 or not isinstance(tables[0], dict) or tables[0].get("id") != "T1":
+        raise BadInput("tuning.quan.tables phải có đúng 1 bàn 'T1'")
+    _pos_in("quan.tables.T1.pos", tables[0].get("pos"), qb, ("x", "z"))
     _between("quan.patience_s", q.get("patience_s"), 20, 180)
     _between("quan.walk_speed", q.get("walk_speed"), 1, 10)
     _between("quan.interact_radius", q.get("interact_radius"), 0.5, 5)
@@ -126,6 +155,10 @@ def validate_tuning(t):
     _between("quan.eat_s", q.get("eat_s"), 0.1, 600)
     _between("quan.customer_interval_s", q.get("customer_interval_s"), 0.1, 600)
     _int_between("quan.first_customer_tick", q.get("first_customer_tick"), 1, int(q["duration_s"] * 60) - 1)
+    _int_between("quan.carry_limit", q.get("carry_limit"), 1, 99)
+    rmin, rmax, rinit = q.get("reputation_min"), q.get("reputation_max"), q.get("reputation_initial")
+    if not (_num(rmin) and _num(rmax) and _num(rinit) and 0 <= rmin <= rinit <= rmax):
+        raise BadInput("reputation_min <= reputation_initial <= reputation_max và >= 0")
     if not (_num(q.get("tip_rate")) and q["tip_rate"] > 0 and _num(q.get("left_reputation_delta"))
             and q["left_reputation_delta"] < 0):
         raise BadInput("tip_rate phải > 0 và left_reputation_delta phải < 0")
@@ -136,8 +169,14 @@ def validate_tuning(t):
         raise BadInput("quan.tip_reputation phải > 0")
     if q.get("burn_s") is not None:
         raise BadInput("burn_s phải là null ở Phase 1")
-    # TODO(nhóm): bổ sung kiểm các khóa còn lại nếu muốn chặt hơn (bếp/bàn, uy tín, ...).
+    if set(menu.keys()) != set(REQUIRED_RECIPES.keys()):
+        raise BadInput(f"tuning.menu phải có đúng 3 món {sorted(REQUIRED_RECIPES)}")
     for dish_id, d in menu.items():
+        if not isinstance(d, dict) or d.get("recipe") != REQUIRED_RECIPES[dish_id]:
+            raise BadInput(f"menu.{dish_id}.recipe phải là {REQUIRED_RECIPES[dish_id]}")
         price, cook = d.get("price"), d.get("cook_s")
         if isinstance(price, bool) or not isinstance(price, int) or price <= 0 or not _num(cook) or cook <= 0:
             raise BadInput(f"menu.{dish_id}: price (nguyên) và cook_s phải > 0")
+    sc = t.get("score")
+    if not isinstance(sc, dict) or not _num(sc.get("reputation_multiplier")) or sc["reputation_multiplier"] < 0:
+        raise BadInput("tuning.score.reputation_multiplier phải là số >= 0")
