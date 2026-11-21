@@ -58,6 +58,39 @@ def dist(p, q):
     return math.dist(p, q)
 
 
+def stock_counts(stock):
+    """Snapshot stock v1.2 (list) hoặc dict cũ → map kind→số."""
+    if isinstance(stock, dict):
+        return {k: stock[k] for k in sorted(stock) if stock[k]}
+    counts = {}
+    for it in stock:
+        kind = it["kind"] if isinstance(it, dict) else it
+        counts[kind] = counts.get(kind, 0) + 1
+    return {k: counts[k] for k in sorted(counts)}
+
+
+def inv_items_from_counts(counts, fresh=100.0):
+    items = []
+    n = 1
+    for kind in sorted(counts):
+        for _ in range(int(counts[kind])):
+            items.append({"id": f"I{n}", "kind": kind, "fresh": fresh})
+            n += 1
+    return {"items": items}
+
+
+def hold_kinds(hold):
+    return [h["kind"] if isinstance(h, dict) else h for h in hold]
+
+
+def lost_kinds(lost):
+    return [x["kind"] if isinstance(x, dict) else x for x in lost]
+
+
+def cook_item_kinds(items):
+    return [x["kind"] if isinstance(x, dict) else x for x in items]
+
+
 class Workdir:
     """Thư mục tạm tự dọn: with Workdir() as w: w.path('x.json')."""
 

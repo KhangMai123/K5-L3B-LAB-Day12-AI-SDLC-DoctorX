@@ -7,7 +7,10 @@
 - Test Lát 2 (Phát): `PYTHONPATH=tests:. python3 -m unittest discover -s tests -p 'test_gather_lat2*.py' -v` — hái/bắt, thứ tự tick và smoke kho hai tiến trình; fixture ở `tests/fixtures/gather_lat2/`.
 - Smoke kho và determinism Phase 1: `PYTHONPATH=tests:. python3 -m unittest test_inventory_and_smoke test_jsonl_and_determinism -v`.
 - Kiểm tra danh sách nhóm: `python3 tools/check_team.py`.
-- Headless: `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl`
+- Headless: `python3 -m chonoi.headless --mode gather|quan|day --seed 1 --ticks 600 --out out.jsonl`
+- Day: `python3 -m chonoi.headless --mode day --seed 1 --days 1 --ticks 22200 --out day.jsonl`
+- Bench: `python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json`
+- Soak: `python3 -m chonoi.soak --seed 7 --days 10 --out soak.json`
 - Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
 - Windows: smoke test gọi `headless_cmd` = `python3 …`; máy không có `python3` sẽ đỏ với mã 9009 (không phải lỗi luật). Tạo venv rồi chép `Scripts/python.exe` thành `Scripts/python3.exe`, thêm `Scripts` vào PATH, chạy test với `PYTHONPATH="tests;."`.
 - Hợp đồng tích hợp (kho, snapshot sim↔UI, sự kiện): `docs/contracts/README.md`, đọc trước khi sửa `sim/*` hoặc UI.
@@ -31,4 +34,5 @@
 - Sáng tạo thêm được khuyến khích nhưng phải tắt ở headless (xem README, mục "Tự do sáng tạo").
 
 ## Skills / hooks của nhóm
-- (Ghi tên và khi nào dùng; tối thiểu 2 skill/hook/command nhóm tự viết, đặt ở `.agents/skills/` hoặc tương đương.)
+- `.agents/skills/chonoi-headless-smoke/` — chạy suite + smoke kho 2 tiến trình / day trước khi gắn tag.
+- `.agents/skills/chonoi-contract-tick/` — thứ tự bước tick, RNG Streams, snapshot/event khi sửa `sim/*` hoặc test AC.

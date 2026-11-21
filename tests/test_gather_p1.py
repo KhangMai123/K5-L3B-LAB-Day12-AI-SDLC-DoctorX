@@ -4,7 +4,7 @@ import json
 import os
 import unittest
 
-from helpers import ROOT, Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import hold_kinds, lost_kinds, stock_counts,  ROOT, Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
 
 
 def _tg():
@@ -112,14 +112,14 @@ class GatherLat1OxygenChokeFaint(unittest.TestCase):
             self.assertEqual(len(faint_evs), 1)
             self.assertEqual(faint_evs[0]["data"]["cause"], "choke")
             self.assertEqual(faint_evs[0]["data"]["hp"], 0)
-            self.assertEqual(faint_evs[0]["data"]["lost"], ["ca_linh", "bong_sung", "ca_loc"])
+            self.assertEqual(lost_kinds(faint_evs[0]["data"]["lost"]), ["ca_linh", "bong_sung", "ca_loc"])
             g_end = events(rows, "gather_end")
             self.assertEqual(len(g_end), 1)
             self.assertEqual(g_end[0]["data"]["reason"], "fainted")
-            self.assertEqual(g_end[0]["data"]["inventory"], {"items": {}})
+            self.assertEqual(g_end[0]["data"]["inventory"], {"items": []})
             self.assertEqual(rows[-1]["reason"], "fainted")
             with open(inv, encoding="utf-8") as f:
-                self.assertEqual(json.load(f), {"items": {}})
+                self.assertEqual(json.load(f), {"items": []})
 
 
 class GatherLat2NodesCatchDock(unittest.TestCase):

@@ -5,7 +5,7 @@ import math
 import os
 import unittest
 
-from helpers import ROOT, Workdir, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import inv_items_from_counts,  ROOT, Workdir, frames, read_jsonl, run_headless, snapshots, write_json
 
 
 def _contract():
@@ -53,7 +53,7 @@ class JsonlAndDeterminism(unittest.TestCase):
 
     def test_quan_determinism_byte_for_byte(self):
         with Workdir() as w:
-            inv = write_json(w.path("inv.json"), {"items": {"ca_loc": 5, "bong_sung": 4, "ca_linh": 6, "bong_dien_dien": 2}})
+            inv = write_json(w.path("inv.json"), inv_items_from_counts({"ca_loc": 5, "bong_sung": 4, "ca_linh": 6, "bong_dien_dien": 2}))
             inp = write_json(w.path("in.json"), frames({"tick": 0, "move": [-1, 1]}, {"tick": 100, "move": [0, 0]}))
             for i in (1, 2):
                 code, err = run_headless("--mode", "quan", "--seed", "123", "--ticks", "300",

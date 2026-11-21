@@ -21,6 +21,9 @@ Trên macOS/Linux, chạy các lệnh sau với Python 3.12 (phiên bản CI dù
 git clone https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX.git && cd K5-L3B-LAB-Day12-AI-SDLC-DoctorX
 PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
 python3 -m chonoi.live --mode gather
+# tùy chọn Phase 4:
+# python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json
+# python3 -m chonoi.soak --seed 7 --days 10 --out soak.json
 ```
 
 Mở địa chỉ server in ra. Để chơi riêng buổi tối, dùng `--mode quan`. Nhấn **WASD** hoặc **mũi tên** để di chuyển, **E** để hái, cập bến hoặc tương tác với bếp/bàn, **Space** để bắt cá dưới nước và **R** để chơi lại.
@@ -36,6 +39,10 @@ Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headl
 Ngoài phần đề yêu cầu, nhóm được **thêm** nhân vật, loài cá/cây, sinh vật, món, bản đồ, cơ chế, câu chuyện, đồ họa, âm nhạc… với ba điều kiện: **không phá phần cố định** (tắt ở headless), ghi mục **"Sáng tạo của nhóm"** trong README của nhóm, và **làm lõi đúng trước**.
 
 ## Sáng tạo của nhóm
+
+### Mở rộng #2: Cháy món (`burn`)
+- Khai `extensions: ["burn"]`, `quan.burn_s: 20`. Món ready quá 1200 tick bị cháy (`dish_burnt`), nguyên liệu mất, thử giữ lại đơn.
+- Chỉ ảnh hưởng quán khi mở rộng bật; số liệu từ `game.contract.json`.
 
 ### Mở rộng #1: Lời Má Tư (Nhài, `client/ui`)
 Má Tư hiện ở góc dưới bên trái cửa sổ chơi và nói giọng Nam Bộ theo diễn biến:

@@ -9,7 +9,7 @@ from chonoi.contract import load_contract
 from chonoi.inputs import InputPlayer, LiveInputs, load_frames
 from chonoi.runner import Session
 
-from helpers import Workdir, frames, write_json
+from helpers import stock_counts,  Workdir, frames, write_json
 
 
 class Units(unittest.TestCase):
@@ -43,11 +43,12 @@ class Units(unittest.TestCase):
             with self.assertRaises(BadInput):
                 load_frames(write_json(w.path("i.json"), frames({"tick": 0, "move": [2, 0]})))
 
-    def test_catch_is_a_v10_button_and_attack_is_not(self):
+    def test_catch_and_attack_are_known_buttons_jump_is_not(self):
         with Workdir() as w:
             load_frames(write_json(w.path("i.json"), frames({"tick": 0, "catch": True})))
+            load_frames(write_json(w.path("a.json"), frames({"tick": 0, "attack": True})))
             with self.assertRaises(BadInput):
-                load_frames(write_json(w.path("j.json"), frames({"tick": 0, "attack": True})))
+                load_frames(write_json(w.path("j.json"), frames({"tick": 0, "jump": True})))
 
     def test_live_inputs_keep_fast_tap_edge(self):
         li = LiveInputs()
@@ -87,7 +88,7 @@ class Units(unittest.TestCase):
         }
         s = Session("quan", tuning, scenario, 1)
         self.assertEqual(s.snapshot()["state"], "playing")
-        self.assertEqual(s.snapshot()["stock"], {"ca_loc": 1})  # tồn vật lý; giữ chỗ nằm ở customers[].reserved
+        self.assertEqual(stock_counts(s.snapshot()["stock"]), {"ca_loc": 1})  # tồn vật lý; giữ chỗ nằm ở customers[].reserved
         customer = s.snapshot()["customers"][0]
         self.assertEqual(customer["order_status"], "reserved")
         self.assertEqual(customer["order_tick"], 0)

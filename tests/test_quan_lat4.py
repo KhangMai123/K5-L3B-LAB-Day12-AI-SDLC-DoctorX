@@ -6,6 +6,7 @@ import unittest
 from chonoi.contract import load_contract
 from chonoi.inputs import InputState
 from chonoi.runner import Session
+from helpers import cook_item_kinds, stock_counts
 
 T = load_contract()["tuning"]
 Q, MENU = T["quan"], T["menu"]
@@ -48,15 +49,21 @@ class Lat4(unittest.TestCase):
                  tables=[], customers=[waiting_customer()])
         rows = s.step(press())
         self.assertEqual(names(rows), ["cook_started"])
-        self.assertEqual(rows[0]["data"], {"stove_id": STOVE["id"], "order_id": "C1", "dish_id": DISH,
-                                          "items": ["ca_loc"], "base_price": PRICE})
+        data = rows[0]["data"]
+        self.assertEqual(data["stove_id"], STOVE["id"])
+        self.assertEqual(data["order_id"], "C1")
+        self.assertEqual(data["dish_id"], DISH)
+        self.assertEqual(cook_item_kinds(data["items"]), ["ca_loc"])
+        bp = data["base_price"]
+        self.assertEqual(bp, int(math.floor(PRICE * data["items"][0]["fresh"] / 100)))
         snap = s.snapshot()
         st = snap["stoves"][0]
-        self.assertEqual((st["state"], st["dish"], st["cook_ticks_left"]),
-                         ("cooking", {"dish_id": DISH, "order_id": "C1", "base_price": PRICE}, COOK))
+        self.assertEqual(st["state"], "cooking")
+        self.assertEqual(st["dish"], {"dish_id": DISH, "order_id": "C1", "base_price": bp})
+        self.assertEqual(st["cook_ticks_left"], COOK)
         c = snap["customers"][0]
-        self.assertEqual((c["order_status"], c["reserved"]), ("assigned", {}))
-        self.assertEqual(snap["stock"], {"ca_loc": 1})  # 2 - 1 đã nấu, không còn giữ chỗ
+        self.assertEqual((c["order_status"], c["reserved"]), ("assigned", []))
+        self.assertEqual(stock_counts(snap["stock"]), {"ca_loc": 1})
 
     def test_cook_breaks_order_tick_tie_by_table_id(self):
         s = quan(TWO_TABLES, stock={"ca_loc": 2}, player={"pos": STOVE["pos"]},

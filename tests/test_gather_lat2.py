@@ -3,6 +3,8 @@
 import copy
 import unittest
 
+from helpers import hold_kinds, lost_kinds, stock_counts
+
 from chonoi.contract import load_contract
 from chonoi.ids import IdAllocator
 from chonoi.inputs import InputPlayer
@@ -112,13 +114,13 @@ class GatherLat2(unittest.TestCase):
                 before_nodes = copy.deepcopy(sim.nodes)
                 ev = press(sim, interact=True)
                 if succeeds:
-                    self.assertEqual(sim.hold, initial_hold + ["bong_sung"] * 2)
+                    self.assertEqual(hold_kinds(sim.hold), initial_hold + ["bong_sung"] * 2)
                     self.assertEqual(data_for(ev, "gather")[0]["amount"], 2)
                 else:
                     self.assertEqual(names(ev), ["hold_full"])
                     self.assertEqual(data_for(ev, "hold_full"),
                                      [{"action": "gather", "node_id": "N1", "required": 2, "free": 1}])
-                    self.assertEqual(sim.hold, initial_hold)
+                    self.assertEqual(hold_kinds(sim.hold), initial_hold)
                     self.assertEqual(sim.nodes, before_nodes)
                     self.assertEqual(sim.catch_cd_ticks, 0)
 
@@ -134,7 +136,7 @@ class GatherLat2(unittest.TestCase):
         self.assertEqual(names(ev), ["node_regrown", "gather"])
         self.assertEqual(data_for(ev, "node_regrown"), [{"node_id": "N1"}])
         self.assertEqual(sim.nodes[0]["regrow_ticks"], ticks)
-        self.assertEqual(sim.hold, ["bong_sung"] * (2 * sim.t["node_yield"]))
+        self.assertEqual(hold_kinds(sim.hold), ["bong_sung"] * (2 * sim.t["node_yield"]))
 
     def test_simultaneous_regrowth_emits_once_in_natural_id_order(self):
         sim = self.sim(nodes=[node("N10", regrow_ticks=1), node("N2", regrow_ticks=1),
@@ -178,7 +180,7 @@ class GatherLat2(unittest.TestCase):
                 sim = self.sim(pos=(20, 5), fish=[fish(kind=kind)], hold=["bong_sung"],
                                tuning={"fish_yield": {"ca_linh": 2, "ca_loc": 4}})
                 ev = press(sim, catch=True)
-                self.assertEqual(sim.hold, ["bong_sung"] + [kind] * count)
+                self.assertEqual(hold_kinds(sim.hold), ["bong_sung"] + [kind] * count)
                 self.assertEqual(data_for(ev, "fish_caught")[0]["yield"], count)
                 self.assertEqual(sim.fish, [])
 
@@ -186,13 +188,13 @@ class GatherLat2(unittest.TestCase):
         sim = self.sim(pos=(20, 5), hold=["bong_sung"] * 3,
                        fish=[fish("F10", (20, 5), "ca_linh"), fish("F2", (21, 5), "ca_loc")],
                        tuning={"hold_capacity": 4, "fish_yield": {"ca_linh": 3, "ca_loc": 1}})
-        before_fish, before_hold = copy.deepcopy(sim.fish), list(sim.hold)
+        before_fish, before_hold = copy.deepcopy(sim.fish), hold_kinds(sim.hold)
         ev = press(sim, catch=True)
         self.assertEqual(names(ev), ["hold_full"])
         self.assertEqual(data_for(ev, "hold_full"),
                          [{"action": "catch", "fish_id": "F10", "required": 3, "free": 1}])
         self.assertEqual(sim.fish, before_fish)
-        self.assertEqual(sim.hold, before_hold)
+        self.assertEqual(hold_kinds(sim.hold), before_hold)
         self.assertEqual(sim.catch_cd_ticks, 0)
 
     def test_catch_cooldown_expires_before_action_and_starts_at_full_duration(self):
@@ -212,7 +214,7 @@ class GatherLat2(unittest.TestCase):
         self.assertEqual(press(sim, catch=True), [])
         self.assertEqual(sim.catch_cd_ticks, 0)
         self.assertEqual(sim.fish, before_fish)
-        self.assertEqual(sim.hold, [])
+        self.assertEqual(hold_kinds(sim.hold), [])
 
     def test_held_buttons_do_not_repeat_after_regrow_or_cooldown(self):
         for button, action, depth in (("interact", "gather", 0), ("catch", "fish_caught", 5)):
@@ -236,13 +238,13 @@ class GatherLat2(unittest.TestCase):
                                tuning={"dock_pos": [20, depth]})
                 before_nodes, before_fish = copy.deepcopy(sim.nodes), copy.deepcopy(sim.fish)
                 ev = press(sim, interact=True, catch=True)
-                self.assertEqual(ev, [("gather_end", {
-                    "reason": "docked", "inventory": {"items": {"ca_loc": 1}},
-                })])
+                self.assertEqual(ev[0][0], "gather_end")
+                self.assertEqual(ev[0][1]["reason"], "docked")
+                self.assertEqual(stock_counts(ev[0][1]["inventory"]["items"]), {"ca_loc": 1})
                 self.assertTrue(sim.done)
                 self.assertEqual(sim.nodes, before_nodes)
                 self.assertEqual(sim.fish, before_fish)
-                self.assertEqual(sim.hold, ["ca_loc"])
+                self.assertEqual(hold_kinds(sim.hold), ["ca_loc"])
 
     def test_faint_finishes_before_catch_and_time(self):
         g = load_contract()["tuning"]["gather"]
@@ -252,7 +254,7 @@ class GatherLat2(unittest.TestCase):
         ev = press(sim, catch=True)
         self.assertEqual(names(ev), ["choke", "faint", "gather_end"])
         self.assertEqual(data_for(ev, "gather_end"), [{
-            "reason": "fainted", "inventory": {"items": {}},
+            "reason": "fainted", "inventory": {"items": []},
         }])
         self.assertEqual(len(sim.fish), 1)
         self.assertEqual(sim.catch_cd_ticks, 0)
@@ -268,9 +270,9 @@ class GatherLat2(unittest.TestCase):
                 ev = press(sim, **{button: True})
                 self.assertEqual(names(ev), [action, "gather_end"])
                 count = sim.t["node_yield"] if depth == 0 else sim.t["fish_yield"][kind]
-                self.assertEqual(data_for(ev, "gather_end"), [{
-                    "reason": "time", "inventory": {"items": {kind: count}},
-                }])
+                self.assertEqual(data_for(ev, "gather_end")[0]["reason"], "time")
+                self.assertEqual(stock_counts(data_for(ev, "gather_end")[0]["inventory"]["items"]),
+                                 {kind: count})
 
 
 if __name__ == "__main__":

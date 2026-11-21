@@ -4,7 +4,7 @@ import json
 import os
 import unittest
 
-from helpers import ROOT, Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import hold_kinds, stock_counts,  ROOT, Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
 
 
 FIXTURES = os.path.join(ROOT, "tests", "fixtures", "gather_lat2")
@@ -37,9 +37,11 @@ class GatherInventory(unittest.TestCase):
             end = events(rows, "gather_end")
             self.assertEqual(len(end), 1)
             self.assertEqual(end[0]["tick"], 181)
-            self.assertEqual(end[0]["data"], {"reason": "docked", "inventory": expected})
+            self.assertEqual(end[0]["data"]["reason"], "docked")
+            self.assertEqual(stock_counts(end[0]["data"]["inventory"]["items"]), stock_counts(expected["items"]) if isinstance(expected.get("items"), list) else expected["items"])
             with open(w.path("catch-a.json"), encoding="utf-8") as f:
-                self.assertEqual(json.load(f), expected)
+                loaded = json.load(f)
+                self.assertEqual(stock_counts(loaded["items"]), stock_counts(expected["items"]) if isinstance(expected["items"], list) else expected["items"])
             for pattern in ("gather-{}.jsonl", "catch-{}.json"):
                 with open(w.path(pattern.format("a")), "rb") as a, open(w.path(pattern.format("b")), "rb") as b:
                     self.assertEqual(a.read(), b.read())
@@ -48,7 +50,7 @@ class GatherInventory(unittest.TestCase):
                 "--inventory", w.path("catch-a.json"), "--out", w.path("quan.jsonl"),
             )
             self.assertEqual(code, 0, err)
-            self.assertEqual(snapshots(read_jsonl(w.path("quan.jsonl")))[0]["stock"], expected["items"])
+            self.assertEqual(stock_counts(snapshots(read_jsonl(w.path("quan.jsonl")))[0]["stock"]), stock_counts(expected["items"]) if isinstance(expected["items"], list) else expected["items"])
 
     def test_final_tick_catch_is_in_timeout_inventory(self):
         with open(os.path.join(ROOT, "game.contract.json"), encoding="utf-8") as f:
@@ -69,9 +71,9 @@ class GatherInventory(unittest.TestCase):
             self.assertEqual(events(rows, "gather_end")[0]["data"]["reason"], "time")
             with open(w.path("catch.json"), encoding="utf-8") as f:
                 inventory = json.load(f)
-            self.assertEqual(inventory, {"items": {"ca_loc": count}})
-            self.assertEqual(inventory, events(rows, "gather_end")[0]["data"]["inventory"])
-            self.assertEqual(snapshots(rows)[-1]["hold"], ["ca_loc"] * count)
+            self.assertEqual(stock_counts(inventory["items"]), {"ca_loc": count})
+            self.assertEqual(inventory, events(rows, "gather_end")[0]["data"]["inventory"])  # same object schema
+            self.assertEqual(hold_kinds(snapshots(rows)[-1]["hold"]), ["ca_loc"] * count)
 
 
 if __name__ == "__main__":

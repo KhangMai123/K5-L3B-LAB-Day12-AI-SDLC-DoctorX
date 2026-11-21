@@ -8,7 +8,7 @@ from chonoi.inputs import LiveInputs
 from chonoi.rng import Streams
 from chonoi.sim.gather import GatherSim
 
-from helpers import Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import hold_kinds, lost_kinds, stock_counts,  Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
 
 
 def sc_underwater(*, oxygen_ticks, zero_oxy_ticks=0, hp=3, hold=None, time_left_ticks=10_000):
@@ -42,7 +42,7 @@ class HoldApi(unittest.TestCase):
         self.assertEqual(sim.free_hold_slots(), cap)
         self.assertTrue(sim.can_hold(1))
         sim.push_hold(["ca_loc", "bong_sung"])
-        self.assertEqual(sim.hold, ["ca_loc", "bong_sung"])
+        self.assertEqual(hold_kinds(sim.hold), ["ca_loc", "bong_sung"])
         self.assertEqual(sim.free_hold_slots(), cap - 2)
         self.assertFalse(sim.can_hold(cap))
         self.assertTrue(sim.can_hold(cap - 2))
@@ -140,13 +140,13 @@ class OxygenChokeFaint(unittest.TestCase):
             faint = events(rows, "faint")[0]
             self.assertEqual(faint["data"]["cause"], "choke")
             self.assertEqual(faint["data"]["hp"], 0)
-            self.assertEqual(faint["data"]["lost"], ["ca_linh", "bong_sung", "ca_loc"])
+            self.assertEqual(lost_kinds(faint["data"]["lost"]), ["ca_linh", "bong_sung", "ca_loc"])
             end = events(rows, "gather_end")[0]
             self.assertEqual(end["data"]["reason"], "fainted")
-            self.assertEqual(end["data"]["inventory"], {"items": {}})
+            self.assertEqual(end["data"]["inventory"], {"items": []})
             with open(inv_out, encoding="utf-8") as f:
                 import json
-                self.assertEqual(json.load(f), {"items": {}})
+                self.assertEqual(json.load(f), {"items": []})
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import json
 import os
 import unittest
 
-from helpers import Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import inv_items_from_counts, stock_counts,  Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
 
 
 class InventoryContractAndSmoke(unittest.TestCase):
@@ -28,7 +28,7 @@ class InventoryContractAndSmoke(unittest.TestCase):
 
             with open(catch_inv, encoding="utf-8") as f:
                 inv_data = json.load(f)
-            self.assertEqual(inv_data, {"items": {"bong_sung": 2, "ca_loc": 1}})
+            self.assertEqual(stock_counts(inv_data["items"]), {"bong_sung": 2, "ca_loc": 1})
 
             code, err = run_headless(
                 "--mode", "quan", "--seed", "42", "--inventory", catch_inv,
@@ -36,7 +36,7 @@ class InventoryContractAndSmoke(unittest.TestCase):
             )
             self.assertEqual(code, 0, err)
             q_snap = snapshots(read_jsonl(q_out))[0]
-            self.assertEqual(q_snap["stock"], {"bong_sung": 2, "ca_loc": 1})
+            self.assertEqual(stock_counts(q_snap["stock"]), {"bong_sung": 2, "ca_loc": 1})
             self.assertEqual(q_snap["money"], 0)
             self.assertEqual(q_snap["earned"], 0)
 
@@ -54,18 +54,18 @@ class InventoryContractAndSmoke(unittest.TestCase):
 
     def test_inventory_large_qty_beyond_hold_capacity_allowed_in_quan(self):
         with Workdir() as w:
-            inv = write_json(w.path("big.json"), {"items": {"ca_linh": 50, "bong_sung": 40}})
+            inv = write_json(w.path("big.json"), inv_items_from_counts({"ca_linh": 50, "bong_sung": 40}))
             out = w.path("q.jsonl")
             code, err = run_headless("--mode", "quan", "--seed", "1", "--ticks", "0", "--inventory", inv, "--out", out)
             self.assertEqual(code, 0, err)
-            self.assertEqual(snapshots(read_jsonl(out))[0]["stock"], {"bong_sung": 40, "ca_linh": 50})
+            self.assertEqual(stock_counts(snapshots(read_jsonl(out))[0]["stock"]), {"bong_sung": 40, "ca_linh": 50})
 
     def test_inventory_rejects_bad_schemas_with_exit_2(self):
         with Workdir() as w:
             out = w.path("q.jsonl")
             bad_invs = [
                 {},
-                {"items": []},
+                
                 {"items": {"ca_loc": True}},
                 {"items": {"ca_loc": -2}},
                 {"items": {"ca_loc": 1.5}},

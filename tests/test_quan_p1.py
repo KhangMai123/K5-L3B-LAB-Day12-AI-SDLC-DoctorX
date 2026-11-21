@@ -5,7 +5,7 @@ import math
 import os
 import unittest
 
-from helpers import ROOT, Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import cook_item_kinds, inv_items_from_counts, stock_counts,  ROOT, Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
 
 
 def _tq():
@@ -19,7 +19,7 @@ class QuanLat3CustomersAndReservation(unittest.TestCase):
         q = t["quan"]
         first = q["first_customer_tick"]
         with Workdir() as w:
-            inv = write_json(w.path("inv.json"), {"items": {"ca_loc": 1}})
+            inv = write_json(w.path("inv.json"), inv_items_from_counts({"ca_loc": 1}))
             sc = write_json(w.path("sc.json"), {"quan": {"time_left_ticks": first + 5}})
             out = w.path("q.jsonl")
             code, err = run_headless("--mode", "quan", "--seed", "42", "--inventory", inv, "--scenario", sc,
@@ -87,7 +87,7 @@ class QuanLat3CustomersAndReservation(unittest.TestCase):
 
     def test_inventory_exceeded_by_scenario_reserved_exits_2(self):
         with Workdir() as w:
-            inv = write_json(w.path("inv.json"), {"items": {"ca_loc": 0}})
+            inv = write_json(w.path("inv.json"), inv_items_from_counts({}))
             sc = write_json(
                 w.path("sc.json"),
                 {
@@ -159,13 +159,12 @@ class QuanLat4CookServePayClose(unittest.TestCase):
 
             cs = events(rows, "cook_started")
             self.assertEqual(len(cs), 1)
-            self.assertEqual(cs[0]["data"], {
-                "stove_id": "B1",
-                "order_id": "C1",
-                "dish_id": "ca_loc_nuong_trui",
-                "items": ["ca_loc"],
-                "base_price": dish["price"],
-            })
+            self.assertEqual(cs[0]["data"]["stove_id"], "B1")
+            self.assertEqual(cs[0]["data"]["order_id"], "C1")
+            self.assertEqual(cs[0]["data"]["dish_id"], "ca_loc_nuong_trui")
+            self.assertEqual(cook_item_kinds(cs[0]["data"]["items"]), ["ca_loc"])
+            bp = cs[0]["data"]["base_price"]
+            self.assertEqual(bp, int(math.floor(dish["price"] * cs[0]["data"]["items"][0]["fresh"] / 100)))
             dr = events(rows, "dish_ready")
             self.assertEqual(dr[0]["data"], {"stove_id": "B1", "order_id": "C1", "dish_id": "ca_loc_nuong_trui"})
             dp = events(rows, "dish_picked")
@@ -173,9 +172,9 @@ class QuanLat4CookServePayClose(unittest.TestCase):
 
             srv = events(rows, "served")
             self.assertEqual(len(srv), 1)
-            expected_tip = math.floor(dish["price"] * q["tip_rate"])
+            expected_tip = math.floor(bp * q["tip_rate"])
             self.assertEqual(srv[0]["data"].get("order_id"), "C1")
-            self.assertEqual(srv[0]["data"].get("base_price"), dish["price"])
+            self.assertEqual(srv[0]["data"].get("base_price"), bp)
             self.assertIn("patience_ticks_left", srv[0]["data"])
             self.assertEqual(srv[0]["data"]["tip"], expected_tip)
 
@@ -184,14 +183,14 @@ class QuanLat4CookServePayClose(unittest.TestCase):
             self.assertEqual(paid[0]["data"], {
                 "order_id": "C1",
                 "table_id": "T1",
-                "base_price": dish["price"],
+                "base_price": bp,
                 "tip": expected_tip,
-                "amount": dish["price"] + expected_tip,
+                "amount": bp + expected_tip,
                 "reason": "finished_eating",
             })
             end = rows[-1]
-            self.assertEqual(end["money"], dish["price"] + expected_tip)
-            self.assertEqual(end["earned"], dish["price"] + expected_tip)
+            self.assertEqual(end["money"], bp + expected_tip)
+            self.assertEqual(end["earned"], bp + expected_tip)
 
     def test_serve_on_exact_zero_patience_tick_still_valid(self):
         t = _tq()

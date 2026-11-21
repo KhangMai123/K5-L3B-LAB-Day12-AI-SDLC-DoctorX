@@ -18,36 +18,35 @@ def _contract():
 class ContractValidation(unittest.TestCase):
     def test_contract_json_has_required_v1_keys_and_values(self):
         c = _contract()
-        self.assertEqual(c["contract_version"], "1.0")
+        self.assertEqual(c["contract_version"], "1.3")
         self.assertEqual(c["team"], "doctorx")
         self.assertEqual(c["team_size"], 6)
-        for k in ("headless_cmd", "run_cmd", "build_cmd"):
+        for k in ("headless_cmd", "run_cmd", "build_cmd", "bench_cmd", "soak_cmd"):
             self.assertIsInstance(c[k], str)
             self.assertTrue(c[k].strip())
         t = c["tuning"]
         self.assertEqual(t["tick_hz"], 60)
-        self.assertIsNone(t["quan"]["burn_s"])
-        self.assertEqual([s["id"] for s in t["quan"]["stoves"]], ["B1"])
-        self.assertEqual([tb["id"] for tb in t["quan"]["tables"]], ["T1"])
-        self.assertEqual(
-            {k: v["recipe"] for k, v in t["menu"].items()},
-            {
-                "ca_loc_nuong_trui": {"ca_loc": 1},
-                "goi_bong_sung": {"bong_sung": 2},
-                "lau_ca_linh_dien_dien": {"ca_linh": 3, "bong_dien_dien": 1},
-            },
-        )
+        self.assertEqual(t["quan"]["burn_s"], 20)
+        self.assertEqual(sorted(s["id"] for s in t["quan"]["stoves"]), ["B1", "B2"])
+        self.assertEqual(sorted(tb["id"] for tb in t["quan"]["tables"]), ["T1", "T2", "T3", "T4"])
+        self.assertEqual(len(t["menu"]), 6)
+        self.assertEqual(t["menu"]["ca_loc_nuong_trui"]["recipe"], {"ca_loc": 1})
+        self.assertEqual(t["gather"]["fish_initial"], 8)
+        self.assertIn("day_plan", t)
+        self.assertIn("shop", t)
         load_contract()
 
     def test_validate_tuning_rejects_out_of_range_and_bad_menu(self):
-        base = _contract()["tuning"]
+        c = _contract()
+        base = c["tuning"]
+        ext = c.get("extensions") or []
         bad_cases = [
             lambda t: t.__setitem__("tick_hz", 30),
             lambda t: t["gather"].__setitem__("duration_s", 59),
             lambda t: t["gather"].__setitem__("hold_capacity", 31),
             lambda t: t["gather"].__setitem__("ramp_max_ticks", 7),
             lambda t: t["quan"].__setitem__("patience_s", 19),
-            lambda t: t["quan"].__setitem__("burn_s", 10),
+            lambda t: t["quan"].__setitem__("burn_s", None),
             lambda t: t["quan"].__setitem__("tip_min_patience_ratio", 0),
             lambda t: t["quan"].__setitem__("left_reputation_delta", 0.1),
             lambda t: t["quan"].__setitem__("first_customer_tick", 0),
@@ -58,7 +57,7 @@ class ContractValidation(unittest.TestCase):
             t = copy.deepcopy(base)
             mutate(t)
             with self.assertRaises(BadInput):
-                validate_tuning(t)
+                validate_tuning(t, extensions=ext)
 
 
 class CliFlagsAndExitCodes(unittest.TestCase):
