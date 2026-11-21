@@ -1,15 +1,15 @@
 # Bằng chứng Lát 2 — Phát (`trdphat`)
 
-Ngày 2026-11-21, nhánh `p1/lat2-phat`, nền Hưng Lát 1 commit `8d0556b`.
+Ngày 2026-11-21, nhánh `p1/lat2-phat`, nền Hưng Lát 1 commit `8d0556b`; đã gộp main `ba94fe7` trước khi mở PR.
 
 ## Kết quả thật
 
-- Toàn bộ **59 test PASS**, gồm 20 test luật Lát 2 và 2 test tích hợp kho mới; xem [unittest.txt](unittest.txt).
+- Toàn bộ **71 test PASS** sau khi gộp main, gồm 20 test luật Lát 2 và 2 test tích hợp kho mới; xem [unittest.txt](unittest.txt).
 - Smoke hái/bắt/cập bến: gather ở tick 1, 3, 5; fish_caught ở tick 36, 66; gather_end docked ở tick 181. Xem [gather-events.json](gather-events.json) và [gather-end.json](gather-end.json).
 - [catch.json](catch.json) là file kho thật do runner ghi: `bong_dien_dien=1`, `bong_sung=2`, `ca_linh=3`, `ca_loc=1`.
 - Tiến trình quán riêng nạp file trên, snapshot tick 0 có stock trùng file kho và `gather_end.inventory`; xem [quan-snapshot.json](quan-snapshot.json).
 - Test `test_collect_dock_export_and_load_in_separate_quan_process` chạy hai lần cùng seed và so byte của cả JSONL lẫn file kho.
-- [team-check.txt](team-check.txt): mã 1 vì Minh, Nhài, Khang còn handle `…`; handle Phát đã điền `trdphat`.
+- [team-check.txt](team-check.txt): mã 1 vì Minh còn handle `…`; handle Phát đã điền `trdphat`.
 
 ## Chạy lại
 
@@ -46,4 +46,4 @@ $env:PYTHONUTF8 = '1'
 
 Đã review implementation bằng agent; Hưng cần review chéo trước khi đẩy theo TEAM.md. Bước tiếp theo là đẩy nhánh `p1/lat2-phat` và mở PR vào `main`.
 
-Không có PRD-0 đầy đủ trong repo. Hai giả định đã ghi và hỏi ở `docs/clarify.md`: cooldown chỉ bắt đầu khi bắt thành công; payload `gather {node_id, kind, count}`, `fish_caught {fish_id, kind, count}`, `hold_full {kind, needed, free}`. Chưa thay `game.contract.json`, schema kho hoặc `docs/contracts/`.
+Payload đã khớp hợp đồng Integrator trên main: `gather {node_id, kind, amount}`, `fish_caught {fish_id, kind, yield}`, `hold_full {required, free}`. Test đổi payload để kiểm đúng hợp đồng hiện hành, giữ nguyên các kiểm tra luật. Còn giả định cooldown chỉ bắt đầu khi bắt thành công, xem `docs/clarify.md`. Dùng API giỏ thực tế của Hưng (`can_hold`/`push_hold`/`free_hold_slots`); tên helper trong tài liệu hợp đồng khác với code đã bàn giao, cần Hưng/Diệp đối chiếu khi review. Không đổi tuning hoặc schema kho.

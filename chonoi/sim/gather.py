@@ -162,12 +162,11 @@ class GatherSim:
             return
         count = self.t["node_yield"]
         if not self.can_hold(count):
-            events.append(("hold_full", {"kind": node["kind"], "needed": count,
-                                         "free": self.free_hold_slots()}))
+            events.append(("hold_full", {"required": count, "free": self.free_hold_slots()}))
             return
         self.push_hold([node["kind"]] * count)
         node["regrow_ticks"] = int(round(self.t["regrow_s"] * TICK))
-        events.append(("gather", {"node_id": node["id"], "kind": node["kind"], "count": count}))
+        events.append(("gather", {"node_id": node["id"], "kind": node["kind"], "amount": count}))
 
     def _catch(self, events):
         if self._at_surface() or self.catch_cd_ticks > 0:
@@ -177,13 +176,12 @@ class GatherSim:
             return
         count = self.t["fish_yield"][fish["kind"]]
         if not self.can_hold(count):
-            events.append(("hold_full", {"kind": fish["kind"], "needed": count,
-                                         "free": self.free_hold_slots()}))
+            events.append(("hold_full", {"required": count, "free": self.free_hold_slots()}))
             return
         self.push_hold([fish["kind"]] * count)
         self.fish.remove(fish)
         self.catch_cd_ticks = int(round(self.t["catch_cooldown_s"] * TICK))
-        events.append(("fish_caught", {"fish_id": fish["id"], "kind": fish["kind"], "count": count}))
+        events.append(("fish_caught", {"fish_id": fish["id"], "kind": fish["kind"], "yield": count}))
 
     def _apply_oxygen(self, events) -> bool:
         """Cập nhật oxy/ngạt theo d cuối bước. Trả True nếu đã ngất và dừng bước."""

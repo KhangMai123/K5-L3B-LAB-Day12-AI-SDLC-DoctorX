@@ -7,7 +7,7 @@
         "data":  {
                      "node_id":  "N2",
                      "kind":  "bong_sung",
-                     "count":  1
+                     "amount":  1
                  }
     },
     {
@@ -18,7 +18,7 @@
         "data":  {
                      "node_id":  "N3",
                      "kind":  "bong_sung",
-                     "count":  1
+                     "amount":  1
                  }
     },
     {
@@ -29,7 +29,7 @@
         "data":  {
                      "node_id":  "N10",
                      "kind":  "bong_dien_dien",
-                     "count":  1
+                     "amount":  1
                  }
     },
     {
@@ -52,7 +52,7 @@
         "data":  {
                      "fish_id":  "F2",
                      "kind":  "ca_linh",
-                     "count":  3
+                     "yield":  3
                  }
     },
     {
@@ -63,7 +63,7 @@
         "data":  {
                      "fish_id":  "F10",
                      "kind":  "ca_loc",
-                     "count":  1
+                     "yield":  1
                  }
     },
     {

@@ -34,7 +34,19 @@ test_id_allocator_continues_after_max (test_python_starter_units.Units.test_id_a
 test_id_sorting (test_python_starter_units.Units.test_id_sorting) ... ok
 test_input_edges_and_inherit (test_python_starter_units.Units.test_input_edges_and_inherit) ... ok
 test_live_inputs_keep_fast_tap_edge (test_python_starter_units.Units.test_live_inputs_keep_fast_tap_edge) ... ok
+test_quan_fixture_reserves_and_releases_at_closing (test_python_starter_units.Units.test_quan_fixture_reserves_and_releases_at_closing) ... ok
+test_quan_no_dish_at_scheduled_tick (test_python_starter_units.Units.test_quan_no_dish_at_scheduled_tick) ... ok
 test_session_steps_gather_and_dock (test_python_starter_units.Units.test_session_steps_gather_and_dock) ... ok
+test_cook_takes_oldest_reserved_and_consumes_stock (test_quan_lat4.Lat4.test_cook_takes_oldest_reserved_and_consumes_stock) ... ok
+test_customer_left_cancels_dish_on_stove (test_quan_lat4.Lat4.test_customer_left_cancels_dish_on_stove) ... ok
+test_dish_ready_exactly_after_cook_ticks (test_quan_lat4.Lat4.test_dish_ready_exactly_after_cook_ticks) ... ok
+test_full_cycle_walk_cook_carry_serve_pay (test_quan_lat4.Lat4.test_full_cycle_walk_cook_carry_serve_pay) ... ok
+test_no_tip_below_patience_ratio (test_quan_lat4.Lat4.test_no_tip_below_patience_ratio) ... ok
+test_pick_respects_carry_limit (test_quan_lat4.Lat4.test_pick_respects_carry_limit) ... ok
+test_reputation_clamped_at_max (test_quan_lat4.Lat4.test_reputation_clamped_at_max) ... ok
+test_serve_with_tip_then_pay (test_quan_lat4.Lat4.test_serve_with_tip_then_pay) ... ok
+test_serve_wrong_customer_does_nothing (test_quan_lat4.Lat4.test_serve_wrong_customer_does_nothing) ... ok
+test_stove_idle_without_order_does_nothing (test_quan_lat4.Lat4.test_stove_idle_without_order_does_nothing) ... ok
 test_con_01_ticks_zero_and_end_line (test_smoke_p1.Contract.test_con_01_ticks_zero_and_end_line) ... ok
 test_con_02_deterministic_bytes (test_smoke_p1.Contract.test_con_02_deterministic_bytes) ... ok
 test_con_03_bad_input_exit_2 (test_smoke_p1.Contract.test_con_03_bad_input_exit_2) ... ok
@@ -65,6 +77,6 @@ test_too_few_members (test_team_check.TeamCheck.test_too_few_members) ... ok
 test_wrong_size_duplicate_and_outsider (test_team_check.TeamCheck.test_wrong_size_duplicate_and_outsider) ... ok
 
 ----------------------------------------------------------------------
-Ran 59 tests in 9.376s
+Ran 71 tests in 9.526s
 
 OK

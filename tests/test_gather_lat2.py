@@ -47,7 +47,7 @@ class GatherLat2(unittest.TestCase):
                               node("N2", (21.5, 0)), node("N10", (20.5, 0))])
         ev = press(sim, interact=True)
         self.assertEqual(data_for(ev, "gather"), [{
-            "node_id": "N10", "kind": "bong_sung", "count": sim.t["node_yield"],
+            "node_id": "N10", "kind": "bong_sung", "amount": sim.t["node_yield"],
         }])
         self.assertEqual(sim.nodes[0]["regrow_ticks"], 9)
         self.assertEqual(sim.nodes[1]["regrow_ticks"], 0)
@@ -113,9 +113,10 @@ class GatherLat2(unittest.TestCase):
                 ev = press(sim, interact=True)
                 if succeeds:
                     self.assertEqual(sim.hold, initial_hold + ["bong_sung"] * 2)
-                    self.assertEqual(data_for(ev, "gather")[0]["count"], 2)
+                    self.assertEqual(data_for(ev, "gather")[0]["amount"], 2)
                 else:
                     self.assertEqual(names(ev), ["hold_full"])
+                    self.assertEqual(data_for(ev, "hold_full"), [{"required": 2, "free": 1}])
                     self.assertEqual(sim.hold, initial_hold)
                     self.assertEqual(sim.nodes, before_nodes)
                     self.assertEqual(sim.catch_cd_ticks, 0)
@@ -146,7 +147,7 @@ class GatherLat2(unittest.TestCase):
         sim = self.sim(pos=(20, 5), fish=[fish("F2", (21.5, 5)), fish("F10", (20.5, 5))])
         ev = press(sim, catch=True)
         self.assertEqual(data_for(ev, "fish_caught"), [{
-            "fish_id": "F10", "kind": "ca_loc", "count": sim.t["fish_yield"]["ca_loc"],
+            "fish_id": "F10", "kind": "ca_loc", "yield": sim.t["fish_yield"]["ca_loc"],
         }])
         self.assertEqual([f["id"] for f in sim.fish], ["F2"])
 
@@ -177,7 +178,7 @@ class GatherLat2(unittest.TestCase):
                                tuning={"fish_yield": {"ca_linh": 2, "ca_loc": 4}})
                 ev = press(sim, catch=True)
                 self.assertEqual(sim.hold, ["bong_sung"] + [kind] * count)
-                self.assertEqual(data_for(ev, "fish_caught")[0]["count"], count)
+                self.assertEqual(data_for(ev, "fish_caught")[0]["yield"], count)
                 self.assertEqual(sim.fish, [])
 
     def test_full_hold_keeps_nearest_fish_and_does_not_try_smaller_school(self):
@@ -187,6 +188,7 @@ class GatherLat2(unittest.TestCase):
         before_fish, before_hold = copy.deepcopy(sim.fish), list(sim.hold)
         ev = press(sim, catch=True)
         self.assertEqual(names(ev), ["hold_full"])
+        self.assertEqual(data_for(ev, "hold_full"), [{"required": 3, "free": 1}])
         self.assertEqual(sim.fish, before_fish)
         self.assertEqual(sim.hold, before_hold)
         self.assertEqual(sim.catch_cd_ticks, 0)

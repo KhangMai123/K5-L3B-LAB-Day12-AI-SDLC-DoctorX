@@ -1,4 +1,2 @@
 KIỂM TRA DANH SÁCH THÀNH VIÊN KHÔNG ĐẠT:
   - thành viên #3: GitHub handle chưa điền hoặc không hợp lệ ('…')
-  - thành viên #5: GitHub handle chưa điền hoặc không hợp lệ ('…')
-  - thành viên #6: GitHub handle chưa điền hoặc không hợp lệ ('…')
