@@ -1,8 +1,36 @@
-# Ma trận truy vết Phase 1
+# Ma trận truy vết Phase 1 — DoctorX (QA Lead: KhangMai123)
 
-| AC | Cách kiểm chứng | Bằng chứng (link `docs/proof/phase-1/...`) | Kết quả (đạt / chưa đạt — ghi trung thực) |
-|---|---|---|---|
+> Kiểm chứng trên nhánh `p1/qa-khang` sau khi gộp `origin/main` (`4e69090`, đã có Lát 1–4 của Hưng, Phát, Minh, Diệp). Chỉ ghi kết quả chạy thực tế; các sai lệch so với PRD-0 Test Contract v1.0 ở phần đồng đội được giữ nguyên FAIL trung thực và gắn rõ owner.
+
+| AC / Yêu cầu | Lệnh / Test kiểm chứng | Actual | Kết quả | Bằng chứng (`docs/proof/phase-1/...`) | Owner |
+|---|---|---|---|---|---|
+| Contract v1.0 & tuning (`game.contract.json`, `chonoi/contract.py`) | `test_contract_and_cli.ContractValidation` | 2/2 test PASS | PASS | `test-suite.log` | Khang (`qa`) / Diệp (`Integrator`) |
+| CLI headless & exit code `0/1/2` (`--ticks 0`, flags sai pha, trùng đường dẫn, lỗi ghi) | `test_contract_and_cli.CliFlagsAndExitCodes`, `test_smoke_p1.Contract` | 10/10 test PASS | PASS | `test-suite.log` | Khang (`qa`) |
+| Inputs (`frames`, cạnh lên `false->true`, normalize `move`, thiếu file) | `test_scenario_and_inputs.InputsContract`, `test_python_starter_units.Units` | PASS toàn bộ | PASS | `test-suite.log` | Khang (`qa`) |
+| Scenario & kiểm mâu thuẫn (`chonoi/scenario.py`, thay mảng `[]`, sort `F2/F10`, mâu thuẫn -> 2) | `test_scenario_and_inputs.ScenarioContract`, `test_smoke_p1.ScenarioModes` | 7/7 test PASS | PASS | `test-suite.log` | Khang (`qa`) |
+| JSONL schema, cadence, thứ tự event trước snapshot, làm tròn 3 chữ số, `score` | `test_jsonl_and_determinism.JsonlAndDeterminism` (3 test) | 3/3 test PASS | PASS | `test-suite.log` | Khang (`qa`) |
+| Determinism byte-for-byte (`gather` & `quan`) | `test_con_02_deterministic_bytes`, `test_quan_determinism_byte_for_byte`, `test_collect_dock_export_and_load_in_separate_quan_process` | 3/3 test PASS | PASS | `test-suite.log` | Khang (`qa`) / Phát |
+| Contract file kho & Smoke test 2 tiến trình (`gather` -> `catch.json` -> `quan`) | `test_inventory_and_smoke`, `test_smoke_p1.Integration`, `test_gather_lat2_inventory` | 11/11 test PASS; `gather_exit=0`, `quan_exit=0`, `catch.json={"items":{"bong_sung":2,"ca_loc":1}}` | PASS | `smoke-two-process.log`, `test-suite.log` | Khang (`qa`) / Phát / Diệp |
+| Gather — bơi, ramp, biên, hết giờ giữ giỏ | `test_smoke_p1.Movement` | 6/6 test PASS | PASS | `test-suite.log` | Hưng (Lát 1) |
+| Gather Lát 1 — `dive`/`surface`, oxy, `oxygen_empty`, `choke` (t+59), `faint` LIFO & kho rỗng | `test_gather_p1.GatherLat1OxygenChokeFaint`, `test_gather_lat1` | 9/9 test PASS | PASS | `test-suite.log` | Hưng (`sim/gather` — Lát 1) |
+| Gather Lát 2 — hái mặt nước, `node_regrown`, `catch` dưới nước, cooldown, ưu tiên bến | `test_gather_lat2`, `test_gather_p1.GatherLat2NodesCatchDock` (trừ `hold_full` schema) | 23/23 test PASS | PASS | `test-suite.log` | Phát (`sim/gather` — Lát 2) |
+| Gather Lát 2 — payload `hold_full` theo PRD-0 (`action`, `node_id`/`fish_id`, `required`, `free`) | `test_gather_hold_full_schema`, `test_catch_underwater_yield_cooldown_and_hold_full` | 2 FAIL: `gather.py` chỉ phát `{"required","free"}` (thiếu `action`, `node_id`/`fish_id`) | FAIL | `test-suite.log` | Phát (`sim/gather` — Lát 2) / Diệp (`docs/contracts`) |
+| Quán Lát 3 — giữ chỗ fixture, không đủ nguyên liệu, `interact` tie-break bếp trước bàn, `ready_ticks` | `test_python_starter_units` (quan), `test_inventory_exceeded_by_scenario_reserved_exits_2`, `test_interact_prefers_stove_on_tie_and_does_not_fallback_to_table`, `test_ready_ticks_starts_at_zero_and_never_burns` | PASS toàn bộ | PASS | `test-suite.log` | Minh (Lát 3) / Diệp (Lát 4) |
+| Quán Lát 3 — payload `customer_arrived` (`order_id`), `no_dish` (`{}`), `customer_left` (`order_id`) | `test_quan_p1.QuanLat3CustomersAndReservation` | 3 FAIL: `quan.py` dùng `customer_id` thay `order_id` và `no_dish` phát `{"table_id":"T1"}` thay `{}` | FAIL | `test-suite.log` | Minh (`sim/quan` — Lát 3) / Diệp (`docs/contracts`) |
+| Quán Lát 4 — phục vụ đúng tick `patience=0`, payload `cook_started`/`dish_ready`/`dish_picked`/`served`/`paid`, đóng ca thanh toán khách đang ăn & dọn bếp/tay & không spawn tick cuối | `test_quan_p1.QuanLat4CookServePayClose` (`test_quan_lat4.py` 10/10 PASS theo contract cũ, nhưng 3 test PRD-0 FAIL) | 3 FAIL: (1) `_remove_impatient_customers()` chạy trước `_interact()`, (2) đóng ca đuổi khách đang ăn bằng `customer_left` thay vì `paid(reason="closing")`, không dọn `stoves`/`hand` và vẫn spawn ở tick cuối, (3) event dùng `customer_id` và thiếu `items`/`base_price`/`patience_ticks_left`/`reason` | FAIL | `test-suite.log` | Diệp (`sim/quan` — Lát 4) |
+| Kiểm danh sách thành viên (`tools/check_team.py`) | `python tools/check_team.py` | Exit 1: thành viên #3 (Vũ Quang Minh) còn `…`; 5/6 thành viên (`danialtranz`, `trdphat`, `HoangMinhDiep`, `nhaipt342k4`, `KhangMai123`) đã hợp lệ | BLOCKED | `check-team.log` | Minh (`sim/quan` — Lát 3) |
+| UI/HUD chơi thử trên trình duyệt & Mở rộng #1 (`p1/ui-nhai`) | Nhài đã chạy Chrome headless trên nhánh `p1/ui-nhai`; chưa hợp nhất `p1/ui-nhai` vào `main` | Đã kiểm code + `mo-rong-1-headless.txt` trên `origin/p1/ui-nhai`, chưa chạy trình duyệt ở phiên Windows hiện tại | NOT_RUN / BLOCKED (chờ merge `p1/ui-nhai`) | — | Nhài (`client/ui`) / Diệp (`Integrator`) |
+| 3 lệnh clean clone trên macOS/Linux & tag `phase-1` trên `main` | Kiểm tra từ môi trường Windows; chưa có chỉ định gắn tag | Chưa chạy trên macOS/Linux; tag `phase-1` do Integrator gắn sau khi sửa 8 FAIL trên `main` | NOT_RUN / BLOCKED | — | Diệp (`Integrator`) |
 
 ## Đánh giá ngắn
-- Yêu cầu nào đạt / chưa đạt:
-- Điều cần chỉnh cho phase sau:
+- **Yêu cầu đạt (101/109 test PASS):** Khung Contract v1.0, CLI exit `0/1/2`, `contract.py`, `scenario.py`, JSONL/determinism byte-for-byte, kho + smoke 2 tiến trình, toàn bộ Lát 1 (`test_gather_lat1` + `GatherLat1OxygenChokeFaint`), và lõi hái/bắt/cập bến Lát 2 đều xanh.
+- **Yêu cầu chưa đạt (8/109 test FAIL — lỗi PRD-0 ở phần đồng đội trên `origin/main`):**
+  1. `chonoi/sim/gather.py` (Lát 2 — Phát): `hold_full` thiếu `action` và `node_id`/`fish_id` (lệch từ `docs/contracts/README.md`).
+  2. `chonoi/sim/quan.py` (Lát 3 & 4 — Minh & Diệp):
+     - Event dùng `customer_id` thay `order_id`, `no_dish` có `table_id` thay `{}`, thiếu `items`/`base_price` ở `cook_started`, thiếu `patience_ticks_left`/`base_price` ở `served`, thiếu `base_price`/`reason` ở `paid` (trái PRD-0 mục E).
+     - `_remove_impatient_customers()` chạy trước `_interact()` làm không phục vụ được khách ở đúng tick `patience_ticks_left` về `0` (trái PRD-0 mục F).
+     - Khi `time_left_ticks <= 0`: không thanh toán `paid(reason="closing")` cho khách đang ăn/vừa `served`, không dọn `stoves`/`hand` (`_cancel_orphan_orders()`), và vẫn cho `_seat_scheduled_customer()` chạy ở tick đóng ca.
+     - `_cook()` tie-break theo `id_key(c["id"])` thay vì `id_key(c["table_id"])`.
+  3. `TEAM.md`: còn thiếu GitHub handle của Vũ Quang Minh (#3).
+  4. Nhánh `origin/p1/ui-nhai` (HUD + Mở rộng #1 Lời Má Tư) chưa được gộp vào `main`; `README.md` trên nhánh đó cũng chưa liệt kê đủ phần điều khiển và công thức tính điểm theo DoD.
+- **Điều cần chỉnh trước khi gắn tag `phase-1`:** Sửa 8 lỗi hợp đồng/luật ở `gather.py` và `quan.py` (và cập nhật `docs/contracts/README.md`, `tests/test_gather_lat2.py`, `tests/test_quan_lat4.py` tương ứng nếu dùng khóa PRD-0), gộp `p1/ui-nhai` và `p1/qa-khang`, điền handle cho Minh, đảm bảo 109/109 test xanh trên `main` rồi Integrator gắn tag `phase-1`.

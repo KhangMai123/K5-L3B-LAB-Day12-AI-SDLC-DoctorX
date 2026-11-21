@@ -1,0 +1,211 @@
+test_input_output_path_collision_exit_2 (test_contract_and_cli.CliFlagsAndExitCodes.test_input_output_path_collision_exit_2) ... ok
+test_invalid_cli_flags_exit_2_without_creating_out (test_contract_and_cli.CliFlagsAndExitCodes.test_invalid_cli_flags_exit_2_without_creating_out) ... ok
+test_signed_negative_seed_accepted (test_contract_and_cli.CliFlagsAndExitCodes.test_signed_negative_seed_accepted) ... ok
+test_write_error_exit_1 (test_contract_and_cli.CliFlagsAndExitCodes.test_write_error_exit_1) ... ok
+test_contract_json_has_required_v1_keys_and_values (test_contract_and_cli.ContractValidation.test_contract_json_has_required_v1_keys_and_values) ... ok
+test_validate_tuning_rejects_out_of_range_and_bad_menu (test_contract_and_cli.ContractValidation.test_validate_tuning_rejects_out_of_range_and_bad_menu) ... ok
+test_can_hold_and_push_lifo_order (test_gather_lat1.HoldApi.test_can_hold_and_push_lifo_order) ... ok
+test_dive_and_surface_events (test_gather_lat1.OxygenChokeFaint.test_dive_and_surface_events) ... ok
+test_faint_drops_hold_lifo_and_empty_inventory (test_gather_lat1.OxygenChokeFaint.test_faint_drops_hold_lifo_and_empty_inventory) ... ok
+test_oxygen_empty_then_first_choke_at_t_plus_59 (test_gather_lat1.OxygenChokeFaint.test_oxygen_empty_then_first_choke_at_t_plus_59)
+Oxy 1 dưới nước → empty ở tick 1; ngạt lần đầu ở tick 60 (= t+59). ... ok
+test_surface_on_choke_step_skips_choke (test_gather_lat1.OxygenChokeFaint.test_surface_on_choke_step_skips_choke)
+Nổi đúng bước đáng lẽ ngạt → hồi oxy, không choke. ... ok
+test_action_radius_uses_position_after_movement (test_gather_lat2.GatherLat2.test_action_radius_uses_position_after_movement) ... ok
+test_catch_chooses_nearest_fish_before_id (test_gather_lat2.GatherLat2.test_catch_chooses_nearest_fish_before_id) ... ok
+test_catch_cooldown_expires_before_action_and_starts_at_full_duration (test_gather_lat2.GatherLat2.test_catch_cooldown_expires_before_action_and_starts_at_full_duration) ... ok
+test_catch_distance_tie_uses_natural_id (test_gather_lat2.GatherLat2.test_catch_distance_tie_uses_natural_id) ... ok
+test_catch_miss_does_not_start_cooldown (test_gather_lat2.GatherLat2.test_catch_miss_does_not_start_cooldown) ... ok
+test_catch_radius_and_surface_boundary (test_gather_lat2.GatherLat2.test_catch_radius_and_surface_boundary) ... ok
+test_dock_finishes_before_gather_or_catch (test_gather_lat2.GatherLat2.test_dock_finishes_before_gather_or_catch) ... ok
+test_faint_finishes_before_catch_and_time (test_gather_lat2.GatherLat2.test_faint_finishes_before_catch_and_time) ... ok
+test_fish_yield_uses_kind_tuning_and_appends_all_items (test_gather_lat2.GatherLat2.test_fish_yield_uses_kind_tuning_and_appends_all_items) ... ok
+test_full_hold_keeps_nearest_fish_and_does_not_try_smaller_school (test_gather_lat2.GatherLat2.test_full_hold_keeps_nearest_fish_and_does_not_try_smaller_school) ... ok
+test_gather_chooses_nearest_ready_node (test_gather_lat2.GatherLat2.test_gather_chooses_nearest_ready_node) ... ok
+test_gather_distance_tie_uses_natural_id (test_gather_lat2.GatherLat2.test_gather_distance_tie_uses_natural_id) ... ok
+test_gather_only_at_surface_including_depth_boundary (test_gather_lat2.GatherLat2.test_gather_only_at_surface_including_depth_boundary) ... ok
+test_gather_radius_includes_boundary (test_gather_lat2.GatherLat2.test_gather_radius_includes_boundary) ... ok
+test_held_buttons_do_not_repeat_after_regrow_or_cooldown (test_gather_lat2.GatherLat2.test_held_buttons_do_not_repeat_after_regrow_or_cooldown) ... ok
+test_last_tick_keeps_new_gathered_or_caught_items_in_end_inventory (test_gather_lat2.GatherLat2.test_last_tick_keeps_new_gathered_or_caught_items_in_end_inventory) ... ok
+test_node_yield_is_tuned_and_added_atomically_in_pickup_order (test_gather_lat2.GatherLat2.test_node_yield_is_tuned_and_added_atomically_in_pickup_order) ... ok
+test_regrow_counter_starts_after_pick_and_can_be_picked_when_expiring (test_gather_lat2.GatherLat2.test_regrow_counter_starts_after_pick_and_can_be_picked_when_expiring) ... ok
+test_simultaneous_regrowth_emits_once_in_natural_id_order (test_gather_lat2.GatherLat2.test_simultaneous_regrowth_emits_once_in_natural_id_order) ... ok
+test_surface_and_dive_gate_actions_after_movement (test_gather_lat2.GatherLat2.test_surface_and_dive_gate_actions_after_movement) ... ok
+test_collect_dock_export_and_load_in_separate_quan_process (test_gather_lat2_inventory.GatherInventory.test_collect_dock_export_and_load_in_separate_quan_process) ... ok
+test_final_tick_catch_is_in_timeout_inventory (test_gather_lat2_inventory.GatherInventory.test_final_tick_catch_is_in_timeout_inventory) ... ok
+test_dive_and_surface_events_across_surface_depth (test_gather_p1.GatherLat1OxygenChokeFaint.test_dive_and_surface_events_across_surface_depth) ... ok
+test_faint_drops_hold_lifo_and_writes_empty_inventory (test_gather_p1.GatherLat1OxygenChokeFaint.test_faint_drops_hold_lifo_and_writes_empty_inventory) ... ok
+test_oxygen_drain_refill_and_empty_and_choke_at_t_plus_59 (test_gather_p1.GatherLat1OxygenChokeFaint.test_oxygen_drain_refill_and_empty_and_choke_at_t_plus_59) ... ok
+test_surface_on_exact_choke_tick_prevents_choke_and_refills (test_gather_p1.GatherLat1OxygenChokeFaint.test_surface_on_exact_choke_tick_prevents_choke_and_refills) ... ok
+test_catch_underwater_yield_cooldown_and_hold_full (test_gather_p1.GatherLat2NodesCatchDock.test_catch_underwater_yield_cooldown_and_hold_full) ... FAIL
+test_dock_has_priority_over_node_even_at_exact_boundary (test_gather_p1.GatherLat2NodesCatchDock.test_dock_has_priority_over_node_even_at_exact_boundary) ... ok
+test_gather_hold_full_schema (test_gather_p1.GatherLat2NodesCatchDock.test_gather_hold_full_schema) ... FAIL
+test_gather_surface_only_nearest_tiebreak_id_and_regrow (test_gather_p1.GatherLat2NodesCatchDock.test_gather_surface_only_nearest_tiebreak_id_and_regrow) ... ok
+test_inventory_large_qty_beyond_hold_capacity_allowed_in_quan (test_inventory_and_smoke.InventoryContractAndSmoke.test_inventory_large_qty_beyond_hold_capacity_allowed_in_quan) ... ok
+test_inventory_rejects_bad_schemas_with_exit_2 (test_inventory_and_smoke.InventoryContractAndSmoke.test_inventory_rejects_bad_schemas_with_exit_2) ... ok
+test_inventory_sentinel_not_overwritten_when_tick_limit (test_inventory_and_smoke.InventoryContractAndSmoke.test_inventory_sentinel_not_overwritten_when_tick_limit) ... ok
+test_prd0_two_process_smoke_in_temp_dir (test_inventory_and_smoke.InventoryContractAndSmoke.test_prd0_two_process_smoke_in_temp_dir) ... ok
+test_common_snapshot_and_score_formula (test_jsonl_and_determinism.JsonlAndDeterminism.test_common_snapshot_and_score_formula) ... ok
+test_coordinates_rounded_to_at_most_3_decimals (test_jsonl_and_determinism.JsonlAndDeterminism.test_coordinates_rounded_to_at_most_3_decimals) ... ok
+test_quan_determinism_byte_for_byte (test_jsonl_and_determinism.JsonlAndDeterminism.test_quan_determinism_byte_for_byte) ... ok
+test_snapshot_cadence_and_event_ordering (test_jsonl_and_determinism.JsonlAndDeterminism.test_snapshot_cadence_and_event_ordering) ... ok
+test_state_input_and_clean_stop (test_live.LiveServerTest.test_state_input_and_clean_stop) ... ok
+test_bad_frames_raise (test_python_starter_units.Units.test_bad_frames_raise) ... ok
+test_catch_is_a_v10_button_and_attack_is_not (test_python_starter_units.Units.test_catch_is_a_v10_button_and_attack_is_not) ... ok
+test_id_allocator_continues_after_max (test_python_starter_units.Units.test_id_allocator_continues_after_max) ... ok
+test_id_sorting (test_python_starter_units.Units.test_id_sorting) ... ok
+test_input_edges_and_inherit (test_python_starter_units.Units.test_input_edges_and_inherit) ... ok
+test_live_inputs_keep_fast_tap_edge (test_python_starter_units.Units.test_live_inputs_keep_fast_tap_edge) ... ok
+test_quan_fixture_reserves_and_releases_at_closing (test_python_starter_units.Units.test_quan_fixture_reserves_and_releases_at_closing) ... ok
+test_quan_no_dish_at_scheduled_tick (test_python_starter_units.Units.test_quan_no_dish_at_scheduled_tick) ... ok
+test_session_steps_gather_and_dock (test_python_starter_units.Units.test_session_steps_gather_and_dock) ... ok
+test_cook_takes_oldest_reserved_and_consumes_stock (test_quan_lat4.Lat4.test_cook_takes_oldest_reserved_and_consumes_stock) ... ok
+test_customer_left_cancels_dish_on_stove (test_quan_lat4.Lat4.test_customer_left_cancels_dish_on_stove) ... ok
+test_dish_ready_exactly_after_cook_ticks (test_quan_lat4.Lat4.test_dish_ready_exactly_after_cook_ticks) ... ok
+test_full_cycle_walk_cook_carry_serve_pay (test_quan_lat4.Lat4.test_full_cycle_walk_cook_carry_serve_pay) ... ok
+test_no_tip_below_patience_ratio (test_quan_lat4.Lat4.test_no_tip_below_patience_ratio) ... ok
+test_pick_respects_carry_limit (test_quan_lat4.Lat4.test_pick_respects_carry_limit) ... ok
+test_reputation_clamped_at_max (test_quan_lat4.Lat4.test_reputation_clamped_at_max) ... ok
+test_serve_with_tip_then_pay (test_quan_lat4.Lat4.test_serve_with_tip_then_pay) ... ok
+test_serve_wrong_customer_does_nothing (test_quan_lat4.Lat4.test_serve_wrong_customer_does_nothing) ... ok
+test_stove_idle_without_order_does_nothing (test_quan_lat4.Lat4.test_stove_idle_without_order_does_nothing) ... ok
+test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock (test_quan_p1.QuanLat3CustomersAndReservation.test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock) ... FAIL
+test_inventory_exceeded_by_scenario_reserved_exits_2 (test_quan_p1.QuanLat3CustomersAndReservation.test_inventory_exceeded_by_scenario_reserved_exits_2) ... ok
+test_no_dish_when_available_stock_insufficient (test_quan_p1.QuanLat3CustomersAndReservation.test_no_dish_when_available_stock_insufficient) ... FAIL
+test_waiting_customer_leaves_on_zero_patience_and_drops_reputation (test_quan_p1.QuanLat3CustomersAndReservation.test_waiting_customer_leaves_on_zero_patience_and_drops_reputation) ... FAIL
+test_closing_pays_eating_just_served_clears_stoves_and_no_spawn (test_quan_p1.QuanLat4CookServePayClose.test_closing_pays_eating_just_served_clears_stoves_and_no_spawn) ... FAIL
+test_full_cook_pick_serve_pay_with_tip_and_reputation (test_quan_p1.QuanLat4CookServePayClose.test_full_cook_pick_serve_pay_with_tip_and_reputation) ... FAIL
+test_interact_prefers_stove_on_tie_and_does_not_fallback_to_table (test_quan_p1.QuanLat4CookServePayClose.test_interact_prefers_stove_on_tie_and_does_not_fallback_to_table) ... ok
+test_ready_ticks_starts_at_zero_and_never_burns (test_quan_p1.QuanLat4CookServePayClose.test_ready_ticks_starts_at_zero_and_never_burns) ... ok
+test_serve_on_exact_zero_patience_tick_still_valid (test_quan_p1.QuanLat4CookServePayClose.test_serve_on_exact_zero_patience_tick_still_valid) ... FAIL
+test_invalid_inputs_rejected_with_exit_2 (test_scenario_and_inputs.InputsContract.test_invalid_inputs_rejected_with_exit_2) ... ok
+test_missing_inputs_acts_as_standing_still (test_scenario_and_inputs.InputsContract.test_missing_inputs_acts_as_standing_still) ... ok
+test_wrong_phase_button_ignored_cleanly (test_scenario_and_inputs.InputsContract.test_wrong_phase_button_ignored_cleanly) ... ok
+test_empty_arrays_replace_defaults_not_merge (test_scenario_and_inputs.ScenarioContract.test_empty_arrays_replace_defaults_not_merge) ... ok
+test_invalid_gather_scenarios_exit_2 (test_scenario_and_inputs.ScenarioContract.test_invalid_gather_scenarios_exit_2) ... ok
+test_invalid_quan_scenarios_and_contradictions_exit_2 (test_scenario_and_inputs.ScenarioContract.test_invalid_quan_scenarios_and_contradictions_exit_2) ... ok
+test_natural_id_sorting_f2_before_f10 (test_scenario_and_inputs.ScenarioContract.test_natural_id_sorting_f2_before_f10) ... ok
+test_con_01_ticks_zero_and_end_line (test_smoke_p1.Contract.test_con_01_ticks_zero_and_end_line) ... ok
+test_con_02_deterministic_bytes (test_smoke_p1.Contract.test_con_02_deterministic_bytes) ... ok
+test_con_03_bad_input_exit_2 (test_smoke_p1.Contract.test_con_03_bad_input_exit_2) ... ok
+test_con_03_old_and_future_modes_rejected (test_smoke_p1.Contract.test_con_03_old_and_future_modes_rejected) ... ok
+test_gather_snapshot_has_gather_fields (test_smoke_p1.Contract.test_gather_snapshot_has_gather_fields) ... ok
+test_scenario_out_of_domain_exit_2 (test_smoke_p1.Contract.test_scenario_out_of_domain_exit_2) ... ok
+test_inv_01_gather_writes_inventory_quan_reads_it (test_smoke_p1.Integration.test_inv_01_gather_writes_inventory_quan_reads_it)
+Ví dụ smoke test trong PRD-0 mục G: cập bến ở tick 0, quán đọc kho đúng nội dung. ... ok
+test_inv_01_not_written_when_tick_limit_first (test_smoke_p1.Integration.test_inv_01_not_written_when_tick_limit_first) ... ok
+test_inv_bad_schema_exit_2 (test_smoke_p1.Integration.test_inv_bad_schema_exit_2) ... ok
+test_inventory_and_scenario_stock_conflict (test_smoke_p1.Integration.test_inventory_and_scenario_stock_conflict) ... ok
+test_inventory_flags_mode_mismatch_exit_2 (test_smoke_p1.Integration.test_inventory_flags_mode_mismatch_exit_2) ... ok
+test_move_01_swim_speed_after_ramp (test_smoke_p1.Movement.test_move_01_swim_speed_after_ramp)
+Bỏ 6 tick tăng tốc rồi đo 60 tick: quãng ≈ swim_speed × 1 s (±0.1). Ngang, xuống, chéo (không nhanh hơn). ... ok
+test_move_02_heading_positive_is_down (test_smoke_p1.Movement.test_move_02_heading_positive_is_down) ... ok
+test_move_03_edge_clamp (test_smoke_p1.Movement.test_move_03_edge_clamp)
+Chặn từng mép của vùng nước, kể cả d không âm (không bay lên khỏi mặt nước) và đáy d = 30. ... ok
+test_move_mep_vel_ve_0 (test_smoke_p1.Movement.test_move_mep_vel_ve_0) ... ok
+test_move_ramp_doi_huong_trong_tran (test_smoke_p1.Movement.test_move_ramp_doi_huong_trong_tran)
+Đảo từ +speed sang -speed: vận tốc chạm mục tiêu sau tối đa ramp_max_ticks tick kể từ lúc đổi input. ... ok
+test_time_ends_gather_and_keeps_hold (test_smoke_p1.Movement.test_time_ends_gather_and_keeps_hold) ... ok
+test_khoi_sai_mode_exit_2 (test_smoke_p1.ScenarioModes.test_khoi_sai_mode_exit_2) ... ok
+test_quan_fixture_khong_hop_le_exit_2 (test_smoke_p1.ScenarioModes.test_quan_fixture_khong_hop_le_exit_2) ... ok
+test_quan_player_vel_hop_le (test_smoke_p1.ScenarioModes.test_quan_player_vel_hop_le) ... ok
+test_good (test_team_check.TeamCheck.test_good) ... ok
+test_template_is_rejected (test_team_check.TeamCheck.test_template_is_rejected) ... ok
+test_too_few_members (test_team_check.TeamCheck.test_too_few_members) ... ok
+test_wrong_size_duplicate_and_outsider (test_team_check.TeamCheck.test_wrong_size_duplicate_and_outsider) ... ok
+
+======================================================================
+FAIL: test_catch_underwater_yield_cooldown_and_hold_full (test_gather_p1.GatherLat2NodesCatchDock.test_catch_underwater_yield_cooldown_and_hold_full)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_gather_p1.py", line 250, in test_catch_underwater_yield_cooldown_and_hold_full
+    self.assertEqual(hf[0]["data"], {"action": "catch", "fish_id": "F1", "required": 3, "free": 2})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'required': 3, 'free': 2} != {'action': 'catch', 'fish_id': 'F1', 'required': 3, 'free': 2}
+- {'free': 2, 'required': 3}
++ {'action': 'catch', 'fish_id': 'F1', 'free': 2, 'required': 3}
+
+======================================================================
+FAIL: test_gather_hold_full_schema (test_gather_p1.GatherLat2NodesCatchDock.test_gather_hold_full_schema)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_gather_p1.py", line 216, in test_gather_hold_full_schema
+    self.assertEqual(hf[0]["data"], {"action": "gather", "node_id": "N1", "required": 1, "free": 0})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'required': 1, 'free': 0} != {'action': 'gather', 'node_id': 'N1', 'required': 1, 'free': 0}
+- {'free': 0, 'required': 1}
++ {'action': 'gather', 'free': 0, 'node_id': 'N1', 'required': 1}
+
+======================================================================
+FAIL: test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock (test_quan_p1.QuanLat3CustomersAndReservation.test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 34, in test_customer_spawns_on_first_tick_even_with_short_shift_and_reserves_stock
+    self.assertIn("order_id", arr[0]["data"])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'order_id' not found in {'customer_id': 'C1', 'table_id': 'T1', 'dish_id': 'ca_loc_nuong_trui'}
+
+======================================================================
+FAIL: test_no_dish_when_available_stock_insufficient (test_quan_p1.QuanLat3CustomersAndReservation.test_no_dish_when_available_stock_insufficient)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 50, in test_no_dish_when_available_stock_insufficient
+    self.assertEqual(nd[0]["data"], {})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+AssertionError: {'table_id': 'T1'} != {}
+- {'table_id': 'T1'}
++ {}
+
+======================================================================
+FAIL: test_waiting_customer_leaves_on_zero_patience_and_drops_reputation (test_quan_p1.QuanLat3CustomersAndReservation.test_waiting_customer_leaves_on_zero_patience_and_drops_reputation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 83, in test_waiting_customer_leaves_on_zero_patience_and_drops_reputation
+    self.assertEqual(left[0]["data"].get("order_id"), "C1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'C1'
+
+======================================================================
+FAIL: test_closing_pays_eating_just_served_clears_stoves_and_no_spawn (test_quan_p1.QuanLat4CookServePayClose.test_closing_pays_eating_just_served_clears_stoves_and_no_spawn)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 318, in test_closing_pays_eating_just_served_clears_stoves_and_no_spawn
+    self.assertEqual(len(paid), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_full_cook_pick_serve_pay_with_tip_and_reputation (test_quan_p1.QuanLat4CookServePayClose.test_full_cook_pick_serve_pay_with_tip_and_reputation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 162, in test_full_cook_pick_serve_pay_with_tip_and_reputation
+    self.assertEqual(cs[0]["data"], {
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        "stove_id": "B1",
+        ^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        "base_price": dish["price"],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    })
+    ^^
+AssertionError: {'stove_id': 'B1', 'customer_id': 'C1', 'dish_id': 'ca_loc_nuong_trui'} != {'stove_id': 'B1', 'order_id': 'C1', 'dish_id': 'ca_loc_nuong[41 chars]: 60}
+- {'customer_id': 'C1', 'dish_id': 'ca_loc_nuong_trui', 'stove_id': 'B1'}
++ {'base_price': 60,
++  'dish_id': 'ca_loc_nuong_trui',
++  'items': ['ca_loc'],
++  'order_id': 'C1',
++  'stove_id': 'B1'}
+
+======================================================================
+FAIL: test_serve_on_exact_zero_patience_tick_still_valid (test_quan_p1.QuanLat4CookServePayClose.test_serve_on_exact_zero_patience_tick_still_valid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Lab\Lab12\K5-L3B-LAB-Day12-AI-SDLC-DoctorX\tests\test_quan_p1.py", line 227, in test_serve_on_exact_zero_patience_tick_still_valid
+    self.assertEqual(len(events(rows, "served")), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 109 tests in 15.652s
+
+FAILED (failures=8)
