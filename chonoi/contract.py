@@ -293,6 +293,14 @@ def validate_tuning(t, extensions=None):
     if not isinstance(g, dict) or not isinstance(q, dict) or not isinstance(menu, dict):
         raise BadInput("tuning phải có gather, quan, menu")
     _validate_gather(g)
+    if "current" in extensions:
+        cur = g.get("current")
+        if not isinstance(cur, dict):
+            raise BadInput("extensions có current nhưng thiếu tuning.gather.current")
+        for k in ("interval_ticks", "duration_ticks", "warning_ticks"):
+            _int_between(f"gather.current.{k}", cur.get(k), 1, 100_000)
+        _between("gather.current.min_depth", cur.get("min_depth"), 0, 30)
+        _between("gather.current.speed", cur.get("speed"), 0, 20)
     _validate_quan(q, extensions)
     _validate_menu(menu)
     _validate_day_plan(t.get("day_plan"), menu)

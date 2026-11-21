@@ -62,6 +62,10 @@ class GatherSim:
         self.time_left_ticks = scenario.get("time_left_ticks", int(round(t["duration_s"] * TICK)))
         self.phase_tick = 0
         self.random_fish = scenario.get("random_fish", True)
+        # mở rộng `current` (dòng nước lũ): bật khi manifest có gather.current và scenario không tắt lịch
+        self.current_cfg = t.get("current") if scenario.get("random_current", True) else None
+        self.current_direction_lock = scenario.get("current_direction")
+        self.current = None  # {"direction", "start", "ticks_left"}
 
         src_nodes = scenario["nodes"] if "nodes" in scenario else t["nodes"]
         self.nodes = [{"id": n["id"], "kind": n["kind"], "pos": [float(c) for c in n["pos"]],
@@ -175,6 +179,8 @@ class GatherSim:
                 "state": m["state"], "state_ticks_left": m["state_ticks_left"],
                 "recoil_dir": m["recoil_dir"],
             } for m in sort_by_id(self.monsters)],
+            **({"current": ({"direction": self.current["direction"], "ticks_left": self.current["ticks_left"]}
+                            if self.current else None)} if self.current_cfg is not None else {}),
         }
 
     def _decay_hold(self, events):
@@ -190,6 +196,44 @@ class GatherSim:
             events.append(("spoiled", {"item_id": h["id"], "kind": h["kind"], "location": "hold"}))
 
     def step(self, inp):
+        events = self._step_core(inp)
+        if self.done and self.current is not None:
+            # ca kết thúc khi dòng còn chảy: current_end(phase_end) trước faint (nếu có) và gather_end
+            at = next(i for i, (n, _) in enumerate(events) if n in ("faint", "gather_end"))
+            events.insert(at, ("current_end", {"direction": self.current["direction"], "reason": "phase_end"}))
+            self.current = None
+        return events
+
+    def _current_schedule(self, events):
+        """Lịch dòng lũ ở phase_tick `now` của bước này (trước di chuyển)."""
+        cfg = self.current_cfg
+        if cfg is None:
+            return
+        now = self.phase_tick + 1
+        every = int(cfg["interval_ticks"])
+        if self.current is not None and now > self.current["start"]:
+            self.current["ticks_left"] -= 1
+            if self.current["ticks_left"] <= 0:
+                events.append(("current_end", {"direction": self.current["direction"], "reason": "elapsed"}))
+                self.current = None
+        if (now + int(cfg["warning_ticks"])) % every == 0:
+            events.append(("current_warning", {"starts_at_phase_tick": now + int(cfg["warning_ticks"])}))
+        if now % every == 0 and self.current is None:
+            d = self.current_direction_lock
+            if d is None:
+                d = self.rng.get("current").choice([-1, 1])
+            self.current = {"direction": int(d), "start": now, "ticks_left": int(cfg["duration_ticks"])}
+            events.append(("current_start", {"direction": int(d), "duration_ticks": int(cfg["duration_ticks"])}))
+
+    def _current_drift(self, d_start):
+        """Cộng lực dòng vào người chơi nếu d đầu bước ≥ min_depth, rồi chặn mép; không đổi player.vel."""
+        if self.current is None or d_start < self.current_cfg["min_depth"]:
+            return
+        lo, hi = self.t["bounds"]["x"]
+        x = self.pos[0] + self.current["direction"] * self.current_cfg["speed"] / TICK
+        self.pos[0] = min(hi, max(lo, x))
+
+    def _step_core(self, inp):
         events = []
         self.time_left_ticks = max(0, self.time_left_ticks - 1)
         self.invuln_ticks = max(0, self.invuln_ticks - 1)
@@ -201,8 +245,11 @@ class GatherSim:
                 if n["regrow_ticks"] == 0:
                     events.append(("node_regrown", {"node_id": n["id"]}))
 
+        self._current_schedule(events)
+        d_start = self.pos[1]
         was_surface = self._at_surface()
         self._move(inp)
+        self._current_drift(d_start)
         now_surface = self._at_surface()
         if was_surface and not now_surface:
             events.append(("dive", {"pos": list(self.pos)}))

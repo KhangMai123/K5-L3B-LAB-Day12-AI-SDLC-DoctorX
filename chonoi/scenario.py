@@ -11,7 +11,8 @@ import math
 from .errors import BadInput
 from .inventory import KINDS, validate_item_list, validate_items
 
-GATHER_KEYS = {"player", "hold", "nodes", "fish", "random_fish", "time_left_ticks", "monsters"}
+GATHER_KEYS = {"player", "hold", "nodes", "fish", "random_fish", "time_left_ticks", "monsters",
+               "random_current", "current_direction"}
 GATHER_PLAYER_KEYS = {"pos", "vel", "heading_deg", "hp", "oxygen_ticks", "zero_oxy_ticks",
                       "invuln_ticks", "catch_cd_ticks"}
 NODE_KINDS = ("bong_dien_dien", "bong_sung", "keo_neo")
@@ -132,6 +133,10 @@ def _validate_gather(b, tuning):
             _check_ids(arr, b[arr])
     if "random_fish" in b and not isinstance(b["random_fish"], bool):
         raise BadInput("random_fish phải là boolean")
+    if "random_current" in b and not isinstance(b["random_current"], bool):
+        raise BadInput("random_current phải là boolean")
+    if "current_direction" in b and (isinstance(b["current_direction"], bool) or b["current_direction"] not in (-1, 1)):
+        raise BadInput("current_direction phải là -1 hoặc 1")
     if "hold" in b:
         h = b["hold"]
         if not isinstance(h, list):

@@ -90,10 +90,28 @@ async function poll() {
     const r = await fetch("/state", { cache: "no-store" });
     snap = await r.json();
     offline = false;
+    currentSfx();
   } catch (e) { offline = true; }
   setTimeout(poll, 16);
 }
 poll();
+
+// Mở rộng `current`: tiếng báo trước dòng lũ (chỉ client, không gửi gì vào sim). Trình duyệt chỉ cho phát
+// âm thanh sau thao tác đầu tiên của người chơi, nên AudioContext tạo lười.
+let sfxCtx = null, lastWarnTick = -1;
+function currentSfx() {
+  const w = (snap.events || []).filter((e) => e.name === "current_warning").pop();
+  if (!w || w.tick === lastWarnTick) return;
+  lastWarnTick = w.tick;
+  try {
+    sfxCtx = sfxCtx || new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.25].forEach((dt) => {
+      const o = sfxCtx.createOscillator(), g = sfxCtx.createGain(), t0 = sfxCtx.currentTime + dt;
+      o.frequency.value = 520; g.gain.setValueAtTime(0.15, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
+      o.connect(g).connect(sfxCtx.destination); o.start(t0); o.stop(t0 + 0.2);
+    });
+  } catch (e) { /* không có âm thanh vẫn còn chữ + biểu tượng */ }
+}
 
 // ---------- dữ liệu hiển thị ----------
 const KINDS = ["ca_loc", "ca_linh", "ca_keo", "bong_dien_dien", "bong_sung", "keo_neo"];
@@ -203,6 +221,9 @@ function eventText(e) {
     case "buy_failed": return { t: `Không mua được (${d.reason})`, c: "#ffcc80" };
     case "shop_end": return { t: "Xong shop", c: "#fff3c4" };
     case "spoiled": return { t: `${kn(d.kind)} ươn (${d.item_id || ""})`, c: "#ffcc80" };
+    case "current_warning": return { t: `🌊 Sắp có dòng nước lũ (tick ${d.starts_at_phase_tick})!`, c: "#80d8ff" };
+    case "current_start": return { t: `🌊 Dòng lũ chảy ${d.direction > 0 ? "→" : "←"} (dưới sâu ≥ 10 m)`, c: "#80d8ff" };
+    case "current_end": return { t: d.reason === "elapsed" ? "🌊 Dòng lũ đã dứt" : "🌊 Dòng lũ dứt (hết buổi)", c: "#b3e5fc" };
     case "dish_burnt": return { t: `Món cháy! ${dishName(d.dish_id)}`, c: "#ff8a80" };
     default: return { t: e.name, c: "#e0e0e0" };
   }
@@ -611,6 +632,7 @@ function gatherPrompt(meta, p) {
     const nearM = (snap.monsters || []).find((m) => dist(p.pos, m.pos) <= 10 && p.pos[1] >= 10);
     if (nearM) return { t: "Thủy quái! Tránh xa!", warn: true };
   }
+  if (snap.current) return { t: `🌊 Dòng lũ ${snap.current.direction > 0 ? "→" : "←"} còn ${secs(snap.current.ticks_left)}s`, warn: true };
   return null;
 }
 function drawGather(w, h) {
