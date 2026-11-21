@@ -46,6 +46,14 @@ class LiveServerTest(unittest.TestCase):
             code, html = _get(base + "/")
             self.assertEqual(code, 200)
             self.assertIn(b"<canvas", html)
+            code, png = _get(base + "/assets/ca_loc.png")
+            self.assertEqual(code, 200)
+            self.assertTrue(png.startswith(b"\x89PNG"), "ảnh asset phải là PNG thật")
+            for bad in ("/assets/../live.py", "/assets/%2e%2e/live.py", "/assets/khong_co.png", "/assets/x.py"):
+                with self.assertRaises(urllib.error.HTTPError, msg=bad) as cm:
+                    _get(base + bad)
+                self.assertEqual(cm.exception.code, 404, bad)
+                cm.exception.close()
             deadline = time.time() + 3
             while time.time() < deadline:
                 st2 = json.loads(_get(base + "/state")[1])

@@ -324,7 +324,32 @@ const FISH_STYLE = {
   ca_loc:  { H: .25, back: "#2f3b22", mid: "#5d6b3a", belly: "#d8cfa4", fin: "#2a2f1c", eye: .065 },
   ca_linh: { H: .42, back: "#4d74a3", mid: "#a9c3d9", belly: "#f4f8fa", fin: "#c9b56a", eye: .09 },
 };
+// Ảnh minh họa (public domain, nguồn ở CREDITS.md). Tải không được thì dùng hình vector bên dưới.
+// faceLeft: ảnh gốc quay đầu sang trái; filter: nhuộm màu cho giống cá miền Tây.
+const ASSETS = {
+  ca_loc:  { src: "assets/ca_loc.png",  faceLeft: true,  filter: "sepia(.6) hue-rotate(35deg) saturate(1.3) brightness(.62) contrast(1.15)" },
+  ca_linh: { src: "assets/ca_linh.png", faceLeft: false, filter: "saturate(.25) brightness(1.2) contrast(1.05)" },
+  rong:    { src: "assets/rong.png" },
+  oc:      { src: "assets/oc.png" },
+  rua:     { src: "assets/rua.png", faceLeft: false },
+};
+const IMG = {};
+Object.entries(ASSETS).forEach(([k, a]) => { const im = new Image(); im.onload = () => (IMG[k] = im); im.src = a.src; });
+// vẽ ảnh: tâm (x, y), rộng w px, giữ tỉ lệ; heading như drawFish
+function drawSprite(k, x, y, w, heading = 0, wobble = 0) {
+  const im = IMG[k], a = ASSETS[k];
+  if (!im) return false;
+  const h = w * im.height / im.width, ang = (heading * Math.PI) / 180;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang + wobble);
+  if (Math.cos(ang) < -1e-6) ctx.scale(1, -1);
+  if (a.faceLeft) ctx.scale(-1, 1);
+  if (a.filter) ctx.filter = a.filter;
+  ctx.drawImage(im, -w / 2, -h / 2, w, h);
+  ctx.restore();
+  return true;
+}
 function drawFish(kind, x, y, L, heading, t) {
+  if (drawSprite(kind, x, y, L * 2.3, heading, Math.sin(t * .2) * .04)) return;
   const st = FISH_STYLE[kind] || FISH_STYLE.ca_linh, H = st.H, loc = kind === "ca_loc";
   const a = (heading * Math.PI) / 180, wag = Math.sin(t * .25) * .22;
   ctx.save(); ctx.translate(x, y); ctx.rotate(a);
@@ -501,6 +526,19 @@ function drawGather(w, h) {
     ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 1; line(sx(0), sy(d), sx(X), sy(d));
     text(d + " m", sx(0) + 4, sy(d) - 2, { size: 10, color: "rgba(255,255,255,.4)" });
   }
+  // trang trí đáy sông (chỉ để nhìn, không phải thực thể của sim): rong, ốc, rùa bơi chậm
+  ctx.fillStyle = "#3a2814"; ctx.fillRect(sx(0), sy(D - .6), X * s, .6 * s);
+  for (const [rx, rh] of [[7, 3.2], [9, 2.4], [24, 2.8], [38, 3.6], [40, 2.2], [55, 3], [70, 2.6], [86, 3.4], [88, 2.3], [97, 2.8]]) {
+    const im = IMG.rong;
+    if (!im) break;
+    const hh = rh * s, ww = hh * im.width / im.height;
+    ctx.save(); ctx.translate(sx(rx), sy(D)); ctx.rotate(Math.sin(t * .03 + rx) * .06);
+    ctx.globalAlpha = .9; ctx.drawImage(im, -ww / 2, -hh, ww, hh); ctx.restore();
+  }
+  drawSprite("oc", sx(31), sy(D - .7), 1.1 * s);
+  drawSprite("oc", sx(78), sy(D - .6), .9 * s);
+  const ruaX = 10 + ((t * .02) % (X - 20));  // rùa bơi qua lại ở đáy, theo tick của màn hình
+  drawSprite("rua", sx(ruaX), sy(D - 3.5) + Math.sin(t * .04) * .2 * s, 3.2 * s, 0);
   // bến: nhà sàn của Má Tư
   const dp = meta.dock_pos || [2, 0], dr = meta.dock_radius || 3;
   stiltHouse(sx, sy, s, dp[0]);
