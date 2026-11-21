@@ -162,14 +162,30 @@ function countItems(o) {
   }
   return Object.keys(o || {}).filter((k) => o[k] > 0).map((k) => kn(k) + " ×" + o[k]).join(", ");
 }
+// v1.2: hàng là cá thể {id, kind, fresh}; vẫn đọc được kho đếm cũ (chuỗi kind).
+const SPOILED_BELOW = 30;
+const itemKind = (it) => (typeof it === "string" ? it : it && it.kind);
+const itemFresh = (it) => (it && typeof it === "object" && typeof it.fresh === "number" ? it.fresh : null);
+const isSpoiled = (it) => { const f = itemFresh(it); return f !== null && f < SPOILED_BELOW; };
+function freshColor(f) { return f === null ? "#9e9e9e" : f < SPOILED_BELOW ? "#ff5252" : f < 60 ? "#ffd166" : "#69f0ae"; }
+// tồn dùng được để nấu: bỏ hàng ươn (vẫn chiếm chỗ nhưng không nấu được)
 function stockCounts() {
   const st = snap.stock;
   if (Array.isArray(st)) {
     const out = {};
-    st.forEach((it) => { const k = typeof it === "string" ? it : it.kind; out[k] = (out[k] || 0) + 1; });
+    st.forEach((it) => { if (isSpoiled(it)) return; const k = itemKind(it); out[k] = (out[k] || 0) + 1; });
     return out;
   }
   return Object.assign({}, st || {});
+}
+function stockFreshInfo() {
+  const info = {};
+  (Array.isArray(snap.stock) ? snap.stock : []).forEach((it) => {
+    const k = itemKind(it), f = itemFresh(it), o = (info[k] = info[k] || { spoiled: 0, min: null });
+    if (isSpoiled(it)) o.spoiled++;
+    else if (f !== null) o.min = o.min === null ? f : Math.min(o.min, f);
+  });
+  return info;
 }
 function stockById() {
   const m = {};
@@ -776,19 +792,36 @@ function drawGather(w, h) {
   if (snap.hold && snap.hold_capacity) {
     const cap = snap.hold_capacity, sz = Math.max(14, Math.min(32, (w - 300) / cap - 4)), y0 = h - bottom + 10;
     for (let i = 0; i < cap; i++) {
-      const x0 = 14 + i * (sz + 4), k = snap.hold[i];
+      const x0 = 14 + i * (sz + 4), it = snap.hold[i], k = itemKind(it);
       rrect(x0, y0, sz, sz, 5, "rgba(255,255,255,.12)");
       if (k) {
-        rrect(x0 + 2, y0 + 2, sz - 4, sz - 4, 4, "rgba(255,248,230,.18)");
+        const f = itemFresh(it), bad = isSpoiled(it);
+        rrect(x0 + 2, y0 + 2, sz - 4, sz - 4, 4, bad ? "rgba(255,82,82,.25)" : "rgba(255,248,230,.18)");
         if (k.startsWith("ca_")) drawFish(k, x0 + sz / 2 + 1, y0 + sz / 2, sz * (k === "ca_loc" ? .36 : .4), 0, 0);
         else drawFlower(k, x0 + sz / 2, y0 + sz / 2, sz * .38, 0);
+        if (f !== null) {  // thanh độ tươi dưới ô + nhãn "ươn"
+          ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.fillRect(x0 + 2, y0 + sz - 5, sz - 4, 3);
+          ctx.fillStyle = freshColor(f); ctx.fillRect(x0 + 2, y0 + sz - 5, (sz - 4) * Math.max(0, Math.min(1, f / 100)), 3);
+          if (bad) text("ươn", x0 + sz / 2, y0 + sz / 2 + 4, { size: 10, align: "center", bold: true, color: "#ff5252" });
+        }
         if (i === snap.hold.length - 1) { ctx.strokeStyle = "#ffd166"; ctx.lineWidth = 2; ctx.strokeRect(x0 + 1, y0 + 1, sz - 2, sz - 2); }
       }
     }
     const full = snap.hold.length >= cap;
-    const names = {}; snap.hold.forEach((k) => (names[k] = (names[k] || 0) + 1));
-    text(`Giỏ ${snap.hold.length}/${cap}` + (full ? " (ĐẦY)" : "") + "   " + (countItems(names) || "trống"), 14, y0 + sz + 22,
-         { size: 13, bold: full, color: full ? "#ffcc80" : "#f3ead8" });
+    const names = {}; snap.hold.forEach((it) => { const k = itemKind(it); names[k] = (names[k] || 0) + 1; });
+    const fr = snap.hold.map(itemFresh).filter((f) => f !== null), nBad = snap.hold.filter(isSpoiled).length;
+    const freshTxt = fr.length ? `   · tươi thấp nhất ${Math.floor(Math.min(...fr))}%` + (nBad ? ` · ${nBad} ươn` : "") : "";
+    text(`Giỏ ${snap.hold.length}/${cap}` + (full ? " (ĐẦY)" : "") + "   " + (countItems(names) || "trống") + freshTxt, 14, y0 + sz + 22,
+         { size: 13, bold: full || nBad > 0, color: nBad ? "#ff8a80" : full ? "#ffcc80" : "#f3ead8" });
+    // day: danh sách Má Tư dặn — đã lấy/cần (đếm hàng chưa ươn)
+    const need = (snap.day_plan || {}).ingredients;
+    if (need) {
+      const have = {}; snap.hold.forEach((it) => { if (!isSpoiled(it)) { const k = itemKind(it); have[k] = (have[k] || 0) + 1; } });
+      const parts = Object.keys(need).sort().map((k) => `${kn(k)} ${Math.min(have[k] || 0, need[k])}/${need[k]}`);
+      const done = Object.keys(need).every((k) => (have[k] || 0) >= need[k]);
+      text("Cần lấy: " + parts.join(" · ") + (done ? "  ✓ đủ" : ""), w - 12, y0 + sz + 22,
+           { size: 13, align: "right", bold: done, color: done ? "#c8f7a5" : "#ffe082" });
+    }
   }
   text("WASD bơi · E hái / cập bến · Space bắt cá · R chơi lại · M Má Tư · L nhật ký", w - 12, h - 14, { size: 12, align: "right", color: "#bfa98a" });
   prompt(gatherPrompt(meta, p), w, h - bottom - 26);
@@ -957,11 +990,13 @@ function drawQuanPanel(x0, pw, h, meta) {
   const head = (s) => { text(s, L, y, { size: 13, bold: true, color: "#ffd166" }); y += 20; };
   const row = (a, b, o = {}) => { text(a, L + 4, y, { size: 13, color: o.color }); if (b !== undefined) text(b, Rr, y, { size: 13, align: "right", color: o.bcolor || o.color }); y += 18; };
   // kho khả dụng
-  const { avail, reserved } = availableStock();
+  const { avail, reserved } = availableStock(), fi = stockFreshInfo();
   head("Kho khả dụng");
   KINDS.forEach((k) => {
-    const r = reserved[k] || 0;
-    row("       " + kn(k), avail[k] + (r ? `  (giữ ${r})` : ""), { color: avail[k] ? "#f3ead8" : "#8d7b63" });
+    const r = reserved[k] || 0, inf = fi[k] || {};
+    const extra = (r ? `  (giữ ${r})` : "") + (inf.min !== null && inf.min !== undefined ? `  ${Math.floor(inf.min)}%` : "")
+      + (inf.spoiled ? `  ⚠${inf.spoiled} ươn` : "");
+    row("       " + kn(k), avail[k] + extra, { color: avail[k] ? "#f3ead8" : "#8d7b63", bcolor: inf.spoiled ? "#ff8a80" : undefined });
     if (k.startsWith("ca_")) drawFish(k, L + 14, y - 22, 10, 0, 0); else drawFlower(k, L + 14, y - 20, 8, 0);
   });
   y += 8;
