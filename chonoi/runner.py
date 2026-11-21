@@ -47,8 +47,11 @@ class Session:
     def done(self) -> bool:
         return self.sim.done
 
+    def _is_paused(self):
+        return self.paused or getattr(self.sim, "paused", False)
+
     def snapshot(self) -> dict:
-        state = "finished" if self.sim.done else ("paused" if getattr(self.sim, "paused", False) else "playing")
+        state = "finished" if self.sim.done else ("paused" if self._is_paused() else "playing")
         day = getattr(self.sim, "day", None) if self.mode == "day" else None
         phase_tick = getattr(self.sim, "phase_tick", self.sim_tick)
         s = _common(self.sim, self.tick, self.sim_tick, phase_tick, self.tuning, state, day=day)
@@ -56,14 +59,29 @@ class Session:
         return s
 
     def step(self, inp) -> list:
-        events = self.sim.step(inp)
+        """Test Contract 4.2: xét cạnh pause trước. Bước vào pause chỉ tăng tick ngoài và phát `paused`;
+        khi còn pause bỏ qua cạnh hành động/buy, sim_tick/phase_tick/timer đứng yên; cạnh lên kế tiếp
+        phát `resumed` rồi chạy gameplay ngay trong bước đó. DaySim tự xử lý pause (kể cả trong Shop)."""
+        if self.mode == "day":
+            events = self.sim.step(inp)
+            ran = not self.sim.paused
+        else:
+            pre = []
+            if inp.pressed("pause"):
+                if not self.paused:
+                    self.paused = True
+                    self.tick += 1
+                    return self._rows([("paused", {})])
+                self.paused = False
+                pre = [("resumed", {})]
+            elif self.paused:
+                self.tick += 1
+                return []
+            events = pre + self.sim.step(inp)
+            ran = True
         self.tick += 1
-        if not getattr(self.sim, "paused", False) or any(n == "resumed" for n, _ in events):
-            # sim_tick tăng khi có gameplay; pause-only bước không tăng (DaySim không tăng phase khi pause)
-            if self.mode == "day":
-                self.sim_tick = self.tick  # simplified: wall clock for day outer; gameplay tracked in phase_tick
-            else:
-                self.sim_tick = self.tick
+        if ran:
+            self.sim_tick += 1
         return self._rows(events)
 
     def _rows(self, events):

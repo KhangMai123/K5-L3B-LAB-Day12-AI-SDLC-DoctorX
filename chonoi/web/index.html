@@ -35,8 +35,9 @@ function currentInput() {
   const dx = (down.has("r") ? 1 : 0) - (down.has("l") ? 1 : 0);
   let dy = (down.has("d") ? 1 : 0) - (down.has("u") ? 1 : 0);   // gather: xuống = d dương
   if (phase === "quan") dy = -dy;                                // quan: lên (bắc) = z dương
-  if (phase === "shop") return { move: [0, 0], interact: false, catch: false, shop_done: down.has("shop_done") };
-  return { move: [dx, dy], interact: down.has("interact"), catch: down.has("catch"), shop_done: false };
+  const pause = down.has("pause");
+  if (phase === "shop") return { move: [0, 0], interact: false, catch: false, shop_done: down.has("shop_done"), pause };
+  return { move: [dx, dy], interact: down.has("interact"), catch: down.has("catch"), shop_done: false, pause };
 }
 function pushInput(extra) {
   const body = Object.assign(currentInput(), extra || {});
@@ -61,9 +62,13 @@ addEventListener("keydown", (e) => {
   const k = keyName(e);
   const phase = phaseOf();
   if (e.repeat) { if (k === " " || k.startsWith("arrow") || k === "enter") e.preventDefault(); return; }
+  // Esc/P: tạm dừng ở cả ba mode (sim xử lý cạnh lên của nút pause, đứng yên mọi timer)
+  if (k === "escape" || k === "p") { down.add("pause"); e.preventDefault(); pushInput(); return; }
+  if (snap && snap.state === "paused") return;  // khi pause, bỏ qua phím hành động
   if (phase === "shop") {
     if (k === "1") { pushInput({ buy: "oxygen" }); e.preventDefault(); return; }
     if (k === "2") { pushInput({ buy: "hp" }); e.preventDefault(); return; }
+    if (k === "3") { pushInput({ buy: "net" }); e.preventDefault(); return; }
     if (k === "e" || k === "enter") { down.add("shop_done"); e.preventDefault(); pushInput(); return; }
   }
   if (MOVE_KEYS[k]) { down.add(MOVE_KEYS[k]); e.preventDefault(); }
@@ -77,6 +82,7 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("keyup", (e) => {
   const k = keyName(e);
+  if (k === "escape" || k === "p") down.delete("pause");
   if (MOVE_KEYS[k]) down.delete(MOVE_KEYS[k]);
   else if (k === "e" || k === "enter") { down.delete("interact"); down.delete("shop_done"); }
   else if (k === " ") down.delete("catch");
@@ -394,6 +400,14 @@ function rawLog(w, h) {
 function overlay(w, h) {
   if (offline) text("Mất kết nối tới máy chủ (đã tắt chưa?)", w / 2, 92, { align: "center", color: "#ff8a80", size: 16, bold: true });
   if (snap.error) text("Luật của nhóm báo lỗi, xem terminal. R để chơi lại.", w / 2, 114, { align: "center", color: "#ff8a80", size: 15, bold: true });
+  if (snap.state === "paused" && !snap.finished) {
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, 0, w, h);  // làm mờ nền
+    rrect(w / 2 - 200, h / 2 - 80, 400, 160, 16, "rgba(43,28,14,.95)");
+    text("⏸ Tạm dừng", w / 2, h / 2 - 30, { align: "center", size: 26, bold: true, color: "#ffd166" });
+    text("Esc / P: Tiếp tục", w / 2, h / 2 + 10, { align: "center", size: 18 });
+    text("R: Về đầu (chơi lại)", w / 2, h / 2 + 40, { align: "center", size: 18, color: "#d7c3a0" });
+    return;
+  }
   if (!snap.finished) return;
   ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(0, 0, w, h);
   rrect(w / 2 - 230, h / 2 - 90, 460, 180, 16, "rgba(43,28,14,.95)");
@@ -1019,13 +1033,16 @@ function drawShop(w, h) {
   text(`${snap.money ?? 0}k`, 152, 36, { size: 18, bold: true, color: "#fff59d" });
   text(`Uy tín ${(snap.reputation ?? 0).toFixed(1)} · Điểm ${snap.score ?? 0}`, 280, 44, { size: 15, color: "#d7c3a0" });
 
-  const cardW = Math.min(420, w * 0.42), cardH = 200, gap = 28;
-  const totalW = cardW * 2 + gap;
-  const x0 = (w - totalW) / 2, y0 = h * 0.22;
   const cards = [
     { key: "oxygen", title: "1 · Oxy", hint: "Lặn lâu hơn ngày mai", color: "#4fc3f7" },
     { key: "hp", title: "2 · Máu", hint: "Thêm tim khi gặp thủy quái", color: "#ff6b81" },
   ];
+  // mở rộng `net`: chỉ hiện khi manifest có dữ liệu nâng cấp net
+  if ((((snap.shop || snap.meta || {}).upgrades || {}).net || []).length)
+    cards.push({ key: "net", title: "3 · Vợt", hint: "Bắt nhiều đàn cá mỗi lần", color: "#c8f7a5" });
+  const gap = 28, cardW = Math.min(420, (w * 0.9 - gap * (cards.length - 1)) / cards.length), cardH = 200;
+  const totalW = cardW * cards.length + gap * (cards.length - 1);
+  const x0 = (w - totalW) / 2, y0 = h * 0.22;
   cards.forEach((c, i) => {
     const x = x0 + i * (cardW + gap), nxt = nextUpgrade(c.key), cur = (snap.upgrades || {})[c.key] || 0;
     const can = nxt && (snap.money ?? 0) >= nxt.price;
