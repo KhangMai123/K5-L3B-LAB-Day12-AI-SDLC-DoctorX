@@ -172,22 +172,48 @@ class GatherLat2NodesCatchDock(unittest.TestCase):
                     {"tick": 0, "interact": True},
                     {"tick": 1, "interact": True},  # giữ nút không được lặp
                     {"tick": 2, "interact": False},
-                    {"tick": regrow_ticks + 1, "interact": True},  # ngay khi regrow xong phải hái lại được
+                    {"tick": 3, "interact": True},  # N1 đang mọc -> hái N2
+                    {"tick": 4, "interact": False},
+                    {"tick": regrow_ticks, "interact": True},  # đúng tick N1 mọc xong -> hái lại N1 ngay
                 ),
             )
             out = w.path("g.jsonl")
-            code, err = run_headless("--mode", "gather", "--seed", "1", "--ticks", str(regrow_ticks + 3),
+            code, err = run_headless("--mode", "gather", "--seed", "1", "--ticks", str(regrow_ticks + 2),
                                      "--scenario", sc, "--inputs", inp, "--out", out)
             self.assertEqual(code, 0, err)
             rows = read_jsonl(out)
             g_evs = events(rows, "gather")
-            self.assertEqual(len(g_evs), 2)
-            self.assertEqual(g_evs[0]["data"]["node_id"], "N1")
+            self.assertEqual([e["data"]["node_id"] for e in g_evs], ["N1", "N2", "N1"])
             self.assertEqual(g_evs[0]["data"]["kind"], "bong_dien_dien")
-            self.assertEqual(g_evs[1]["data"]["node_id"], "N2")  # hoặc N1 nếu đã mọc lại và hòa id
+            self.assertEqual(g_evs[2]["tick"], 1 + regrow_ticks)
             regrown = events(rows, "node_regrown")
             self.assertEqual([e["data"]["node_id"] for e in regrown], ["N1"])
             self.assertEqual(regrown[0]["tick"], 1 + regrow_ticks)
+
+    def test_gather_hold_full_schema(self):
+        g = _tg()
+        cap = g["hold_capacity"]
+        with Workdir() as w:
+            sc = write_json(
+                w.path("sc.json"),
+                {
+                    "gather": {
+                        "player": {"pos": [20, 0]},
+                        "hold": ["ca_loc"] * cap,
+                        "nodes": [{"id": "N1", "kind": "bong_sung", "pos": [20, 0]}],
+                        "fish": [],
+                        "random_fish": False,
+                    }
+                },
+            )
+            inp = write_json(w.path("in.json"), frames({"tick": 0, "interact": True}))
+            out = w.path("g.jsonl")
+            code, err = run_headless("--mode", "gather", "--seed", "1", "--ticks", "1",
+                                     "--scenario", sc, "--inputs", inp, "--out", out)
+            self.assertEqual(code, 0, err)
+            hf = events(read_jsonl(out), "hold_full")
+            self.assertEqual(len(hf), 1)
+            self.assertEqual(hf[0]["data"], {"action": "gather", "node_id": "N1", "required": 1, "free": 0})
 
     def test_catch_underwater_yield_cooldown_and_hold_full(self):
         g = _tg()

@@ -90,7 +90,9 @@ class ScenarioContract(unittest.TestCase):
                 {"player": {"pos": [10, 5], "oxygen_ticks": 100, "zero_oxy_ticks": 5}},
                 {"player": {"pos": [10, 5], "oxygen_ticks": 0, "zero_oxy_ticks": 60}},
                 {"nodes": [{"id": "N1", "kind": "unknown_plant", "pos": [10, 0]}]},
+                {"nodes": [{"id": "N1", "kind": "bong_sung", "pos": [10, 0], "extra": 1}]},
                 {"fish": [{"id": "F1", "kind": "ca_linh", "pos": [10, 0.5]}]},
+                {"fish": [{"id": "F1", "kind": "ca_linh", "pos": [10, 5], "speed": 2}]},
             ]
             for idx, blk in enumerate(bad):
                 sc = write_json(w.path(f"g_{idx}.json"), {"gather": blk})
@@ -106,7 +108,13 @@ class ScenarioContract(unittest.TestCase):
                 {"reputation": 5.5},
                 {"reputation": -0.1},
                 {"stoves": [{"id": "B9"}]},
+                {"stoves": [{"id": "B1", "extra": 1}]},
                 {"tables": [{"id": "T9"}]},
+                {"tables": [{"id": "T1", "extra": 1}]},
+                {"customers": [{"id": "C1", "table_id": "T1", "dish_id": "ca_loc_nuong_trui", "extra": 1}]},
+                {"hand": {"order_id": "C1", "dish_id": "ca_loc_nuong_trui", "base_price": 60, "extra": 1},
+                 "customers": [{"id": "C1", "table_id": "T1", "dish_id": "ca_loc_nuong_trui",
+                                "order_status": "assigned"}]},
                 {"stoves": [{"id": "B1", "state": "cooking", "cook_ticks_left": 0,
                              "dish": {"order_id": "C1", "dish_id": "ca_loc_nuong_trui", "base_price": 60}}]},
                 {"customers": [{"id": "C1", "table_id": "T1", "dish_id": "mon_la"}]},
