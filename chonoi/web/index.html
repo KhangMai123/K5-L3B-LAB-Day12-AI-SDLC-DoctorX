@@ -177,6 +177,7 @@ const MA = {
   cook_started: ["Lửa vừa thôi nghen, đừng để khét."],
   dish_ready: ["Chín rồi đó, bưng ra cho nóng!", "Thơm lừng luôn, bưng lẹ đi con!"],
   served: ["Dọn món rồi, chúc khách ăn ngon miệng!"],
+  paid: ["Tiền vô rồi! Cảm ơn khách nghen.", "Khách ăn xong trả tiền rồi, dọn bàn lẹ lên con."],
   served_tip: ["Khách khen ngon, còn boa thêm nữa nè!", "Được boa rồi, quán mình có tiếng rồi đó!"],
   customer_left: ["Trời, khách bỏ về rồi… lần sau mình làm lẹ tay hơn nghen."],
   quan_end_good: ["Dọn hàng thôi con. Bữa nay đắt hàng, má mừng quá!"],
@@ -184,7 +185,7 @@ const MA = {
 };
 // độ ưu tiên khi nhiều sự kiện cùng lúc: chuyện gấp nói trước
 const MA_PRIO = { faint: 9, gather_end: 8, quan_end: 8, choke: 7, oxygen_empty: 6, customer_left: 6, hold_full: 5,
-                  dish_ready: 4, served: 4, customer_arrived: 4, no_dish: 3, fish_caught: 3, gather: 2, cook_started: 1, dive: 1 };
+                  dish_ready: 4, served: 4, paid: 4, customer_arrived: 4, no_dish: 3, fish_caught: 3, gather: 2, cook_started: 1, dive: 1 };
 const pick = (key, n) => { const a = MA[key]; return a ? a[Math.abs(n) % a.length] : null; };
 function maKey(e) {
   const d = e.data || {};
@@ -647,6 +648,10 @@ function quanPrompt(meta, p) {
   if (!c) return null;
   if (c.k === 0) {
     const st = c.o;
+    if (st.state === "idle" && snap.hand) {
+      const cu = (snap.customers || []).find((x) => x.id === handOrderId());
+      return { t: `Đang bưng ${dishName(snap.hand)}, ra bàn ${cu ? cu.table_id : ""} dọn cho khách` };
+    }
     if (st.state === "idle") { const o = oldestReserved(); return o ? { t: `E: nấu ${dishName(o.dish_id)} cho ${o.table_id}`, act: true } : { t: `${st.id}: chưa có đơn để nấu` }; }
     if (st.state === "cooking") return { t: `${st.id} đang nấu ${dishName(st.dish)}… còn ${secs(st.cook_ticks_left)}s` };
     if (st.state === "ready") return snap.hand ? { t: "Tay đang bưng món, dọn trước đã", warn: true } : { t: `E: bưng ${dishName(st.dish)}`, act: true };
