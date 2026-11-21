@@ -1,4 +1,4 @@
-"""Buổi sáng — Lặn & Hái (`gather`). KHUNG: bơi, chặn mép, đồng hồ, cập bến, xuất kho.
+"""Buổi sáng — Lặn & Hái (`gather`), lõi Phase 1.
 
 Mặt cắt dòng sông nhìn NGANG: vị trí `[x, d]` (x sang phải, `d` độ sâu hướng xuống, d = 0 là mặt nước).
 `move = [x, d]`: thành phần thứ hai DƯƠNG = bơi xuống. Hướng mặt là góc từ +x, dương = xuống.
@@ -6,17 +6,17 @@ Mặt cắt dòng sông nhìn NGANG: vị trí `[x, d]` (x sang phải, `d` đ�
 Đã làm sẵn để smoke test chạy được: bơi + tăng/giảm tốc, chặn mép (d không âm), đồng hồ và hết giờ,
 cập bến (`interact` trong vùng bến -> `gather_end` reason `docked`), xuất kho, snapshot đầy đủ trường gather.
 
-Nhóm viết tiếp (đúng thứ tự một bước trong PRD mục 13.8, "Gather"):
+Luật của nhóm (thứ tự một bước theo PRD mục 13.8, "Gather"):
   Lát 1 (đã làm): dive/surface, oxy, oxygen_empty, choke, faint, API giỏ
       - oxy theo d CUỐI bước; mặt nước hồi oxygen_refill_per_tick + reset ngạt; dưới nước −1
       - ngạt: oxy = 0 dưới nước → tăng zero_oxy_ticks; đủ choke_interval_ticks → −1 Máu
       - Máu 0 → bỏ giỏ LIFO, faint, gather_end("fainted"), kho rỗng, dừng bước
       - giỏ: `can_hold(n)` / `push_hold(kinds)` / `free_hold_slots()` — Phát (lát 2) dùng khi hái/bắt
-  TODO(nhóm, lát 2): hái + bắt cá + cập bến + kho
-      - hái nút ở mặt nước (gather, hold_full), nút mọc lại (node_regrown đã có phần đếm ngược)
-      - bắt đàn cá bằng `catch` (fish_caught, hold_full, hồi chiêu catch_cd_ticks, chỉ khi dưới nước)
-      - cập bến xét TRƯỚC hái (đã có); ghi kho đúng một lần do runner lo
-      - trước khi thêm hàng: if not sim.can_hold(n): phát hold_full; else sim.push_hold([...])
+  Lát 2 (đã làm): hái + bắt cá + cập bến + kho
+      - hái nút ready gần nhất trên mặt nước; hòa khoảng cách theo id; node_yield + regrow_s từ tuning
+      - bắt đàn gần nhất dưới nước; lấy trọn fish_yield, xóa đàn và bắt đầu hồi chiêu khi thành công
+      - giỏ thiếu chỗ → hold_full, không đổi mục tiêu / bộ đếm, không thử đàn khác
+      - cập bến xét TRƯỚC hái; ghi kho đúng một lần do runner lo
 Các tính năng của phase sau chưa nằm trong khung này.
 """
 
@@ -135,13 +135,10 @@ class GatherSim:
             if self._in_dock():
                 self._finish("docked", events)
                 return events
-            # TODO(nhóm, lát 2): chỉ khi ở mặt nước: hái nút `ready` gần nhất trong interact_radius
-            #   (id nhỏ khi bằng nhau): gather / hold_full; đặt regrow_ticks cho nút.
-            #   if not self.can_hold(1): hold_full; else self.push_hold([kind])
+            self._gather(events)
         # 4. bắt cá
         if inp.pressed("catch"):
-            pass  # TODO(nhóm, lát 2): chỉ khi catch_cd_ticks == 0 và dưới nước: fish_caught / hold_full.
-            #   n = fish_yield[kind]; if not self.can_hold(n): hold_full; else self.push_hold([kind]*n)
+            self._catch(events)
         # 5. hết giờ
         if self.time_left_ticks <= 0:
             self._finish("time", events)
@@ -150,6 +147,43 @@ class GatherSim:
     # --- tiện ích ---------------------------------------------------------------
     def _at_surface(self) -> bool:
         return self.pos[1] <= self.t["surface_depth"]
+
+    def _nearest_in_radius(self, entities, radius):
+        """Chọn theo khoảng cách, hòa theo thứ tự id (F2 trước F10)."""
+        nearby = [e for e in sort_by_id(entities) if math.dist(self.pos, e["pos"]) <= radius]
+        return min(nearby, key=lambda e: math.dist(self.pos, e["pos"]), default=None)
+
+    def _gather(self, events):
+        if not self._at_surface():
+            return
+        node = self._nearest_in_radius(
+            [n for n in self.nodes if n["regrow_ticks"] == 0], self.t["interact_radius"])
+        if node is None:
+            return
+        count = self.t["node_yield"]
+        if not self.can_hold(count):
+            events.append(("hold_full", {"kind": node["kind"], "needed": count,
+                                         "free": self.free_hold_slots()}))
+            return
+        self.push_hold([node["kind"]] * count)
+        node["regrow_ticks"] = int(round(self.t["regrow_s"] * TICK))
+        events.append(("gather", {"node_id": node["id"], "kind": node["kind"], "count": count}))
+
+    def _catch(self, events):
+        if self._at_surface() or self.catch_cd_ticks > 0:
+            return
+        fish = self._nearest_in_radius(self.fish, self.t["catch_radius"])
+        if fish is None:
+            return
+        count = self.t["fish_yield"][fish["kind"]]
+        if not self.can_hold(count):
+            events.append(("hold_full", {"kind": fish["kind"], "needed": count,
+                                         "free": self.free_hold_slots()}))
+            return
+        self.push_hold([fish["kind"]] * count)
+        self.fish.remove(fish)
+        self.catch_cd_ticks = int(round(self.t["catch_cooldown_s"] * TICK))
+        events.append(("fish_caught", {"fish_id": fish["id"], "kind": fish["kind"], "count": count}))
 
     def _apply_oxygen(self, events) -> bool:
         """Cập nhật oxy/ngạt theo d cuối bước. Trả True nếu đã ngất và dừng bước."""
