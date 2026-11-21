@@ -39,6 +39,8 @@ class LiveServerTest(unittest.TestCase):
             self.assertIn("tick", st)
             self.assertEqual(st["mode"], "gather")
             self.assertEqual(st["player"]["pos"], [2, 0])
+            self.assertEqual(st["menu"], tuning["menu"], "HUD quán cần thực đơn")
+            self.assertEqual(st["meta"], tuning["gather"])
             self.assertEqual(_post(base + "/input", {"move": [1, 0], "interact": False, "catch": False}), 200)
             self.assertEqual(_post(base + "/input", {"move": [5, 0]}), 400)
             code, html = _get(base + "/")
