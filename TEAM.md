@@ -4,12 +4,12 @@
 
 | Thành viên | GitHub handle | Module chính | Vai quy trình | Người dự phòng cho |
 |---|---|---|---|---|
-| Trần Cảnh Hưng | danialtranz | `sim/gather` — Lát 1: bơi, oxy, biên, giỏ | Scrum/Release | Lát 2 (Phát) |
-| Trương Đức Phát | trdphat | `sim/gather` — Lát 2: hái, bắt cá, cập bến, ghi kho | — | Lát 1 (Hưng) |
-| Vũ Quang Minh | minh240804 | `sim/quan` — Lát 3: khách, giữ chỗ nguyên liệu, kiên nhẫn | PO | Lát 4 (Diệp) |
-| Hoàng Minh Diệp | HoangMinhDiep | `sim/quan` — Lát 4: bếp, bưng, phục vụ, tiền, uy tín | Integrator (trưởng nhóm) | Lát 3 (Minh) |
-| Phùng Thị Nhài | nhaipt342k4 | `client/ui` — HUD 2 buổi, `chonoi/web/`, `live.py`; mở rộng #1 | — | UI + chơi thử |
-| Mai Xuân Khang | KhangMai123 | `qa` — `tests/`, ma trận truy vết, `docs/proof/`; mở rộng #2 | QA lead | `scenario.py` / `contract.py` |
+| Trần Cảnh Hưng - 2A202603759 | danialtranz | `sim/gather` — Lát 1: bơi, oxy, biên, giỏ | Scrum/Release | Lát 2 (Phát) |
+| Trương Đức Phát - 2A202603757 | trdphat | `sim/gather` — Lát 2: hái, bắt cá, cập bến, ghi kho | — | Lát 1 (Hưng) |
+| Vũ Quang Minh - 2A202603727 | minh240804 | `sim/quan` — Lát 3: khách, giữ chỗ nguyên liệu, kiên nhẫn | PO | Lát 4 (Diệp) |
+| Hoàng Minh Diệp - 2A202603764 | HoangMinhDiep | `sim/quan` — Lát 4: bếp, bưng, phục vụ, tiền, uy tín | Integrator (trưởng nhóm) | Lát 3 (Minh) |
+| Phùng Thị Nhài - 2A202603725 | nhaipt342k4 | `client/ui` — HUD 2 buổi, `chonoi/web/`, `live.py`; mở rộng #1 | — | UI + chơi thử |
+| Mai Xuân Khang - 2A202603722 | KhangMai123 | `qa` — `tests/`, ma trận truy vết, `docs/proof/`; mở rộng #2 | QA lead | `scenario.py` / `contract.py` |
 
 > Mỗi người tự thay `…` bằng GitHub handle của mình (commit đầu tiên). `python3 tools/check_team.py` phải báo OK.
 
