@@ -145,3 +145,4 @@ Thứ tự id trong một bước: nhiều thực thể cùng phát một loại
 | 21/11/2026 | Diệp | Bản chốt phút 15: kho, sim↔UI, sự kiện | Kickoff Phase 1 |
 | 21/11/2026 | Minh | `hand` thêm `base_price`; bỏ [GĐ] cho `hand`/`stove.dish` | Đối chiếu PRD-0 mục D |
 | 21/11/2026 | Diệp | `price` → `base_price`; ghi rõ luật boa/uy tín của `paid` | Khớp code lát 3 + lát 4 |
+| 21/11/2026 | Diệp | Code lát 3 về đúng hợp đồng: snapshot `stock` = tồn vật lý; `no_dish` data `{table_id}`; `customer_left` thêm `reputation` | HUD của Nhài tự trừ giữ chỗ (bị trừ 2 lần) và đọc `customer_left.reputation` |

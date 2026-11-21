@@ -127,7 +127,10 @@ class Lat4(unittest.TestCase):
         stove = {"id": STOVE["id"], "state": "cooking", "dish": {"dish_id": DISH, "order_id": "C1"},
                  "cook_ticks_left": 100}
         s = quan(stoves=[stove], customers=[waiting_customer(order_status="assigned", patience_ticks_left=1)])
-        self.assertIn("customer_left", names(s.step(idle())))
+        rows = s.step(idle())
+        left = [r["data"] for r in rows if r["name"] == "customer_left"]
+        self.assertEqual(left, [{"customer_id": "C1", "table_id": TABLE["id"], "reason": "patience",
+                                 "reputation": Q["reputation_initial"] + Q["left_reputation_delta"]}])
         st = s.snapshot()["stoves"][0]
         self.assertEqual((st["state"], st["dish"]), ("idle", None))
 

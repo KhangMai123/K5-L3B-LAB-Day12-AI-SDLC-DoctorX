@@ -87,7 +87,7 @@ class Units(unittest.TestCase):
         }
         s = Session("quan", tuning, scenario, 1)
         self.assertEqual(s.snapshot()["state"], "playing")
-        self.assertEqual(s.snapshot()["stock"], {})
+        self.assertEqual(s.snapshot()["stock"], {"ca_loc": 1})  # tồn vật lý; giữ chỗ nằm ở customers[].reserved
         customer = s.snapshot()["customers"][0]
         self.assertEqual(customer["order_status"], "reserved")
         self.assertEqual(customer["order_tick"], 0)
@@ -98,6 +98,8 @@ class Units(unittest.TestCase):
         rows = s.step(li.advance())
         names = [r["name"] for r in rows]
         self.assertIn("customer_left", names)
+        left = [r for r in rows if r["name"] == "customer_left"][0]["data"]
+        self.assertEqual((left["reason"], left["reputation"]), ("closing", 3.0))
         self.assertIn("quan_end", names)
         self.assertEqual(s.snapshot()["customers"], [])
 
@@ -114,6 +116,7 @@ class Units(unittest.TestCase):
             s.step(li.advance())
         rows = s.step(li.advance())
         self.assertEqual([r["name"] for r in rows], ["no_dish"])
+        self.assertEqual(rows[0]["data"], {"table_id": "T1"})
 
 
 if __name__ == "__main__":

@@ -63,10 +63,10 @@ class QuanSim:
 
     def snapshot(self) -> dict:
         occupied = {c["table_id"]: c["id"] for c in self.customers}
-        available_stock = self._available_stock()
         return {
             "player": {"pos": self.pos},
-            "stock": {k: available_stock[k] for k in sorted(available_stock) if available_stock[k] > 0},
+            # tồn VẬT LÝ (hợp đồng mục 2.2); kho khả dụng = stock − Σ reserved, UI tự tính
+            "stock": {k: self.stock[k] for k in sorted(self.stock) if self.stock[k] > 0},
             "hand": self.hand,
             "stoves": [{k: s.get(k) for k in ("id", "pos", "state", "dish", "cook_ticks_left", "ready_ticks")}
                        for s in self.stoves],
@@ -184,7 +184,7 @@ class QuanSim:
 
         available = self._available_dishes()
         if not available:
-            return [("no_dish", {"reason": "no_dish"})]
+            return [("no_dish", {"table_id": empty_tables[0]["id"]})]
 
         dish_id = self.rng.get("customers").choice(available)
         recipe = dict(self.menu[dish_id]["recipe"])
@@ -226,6 +226,7 @@ class QuanSim:
                     "customer_id": c["id"],
                     "table_id": c["table_id"],
                     "reason": "patience",
+                    "reputation": self.reputation,
                 }))
             else:
                 remaining.append(c)
@@ -240,6 +241,7 @@ class QuanSim:
                 "customer_id": c["id"],
                 "table_id": c["table_id"],
                 "reason": "closing",
+                "reputation": self.reputation,
             }))
         self.customers = []
         return events
