@@ -184,22 +184,11 @@ class QuanSim:
             events.append(("quan_end", {"reason": "time", "money": self.money, "earned": self.earned,
                                         "shift_earned": self.shift_earned, "reputation": self.reputation}))
         elif self._next_customer_tick is not None and self._elapsed_ticks >= self._next_customer_tick:
-            # Bàn đầy: giữ mốc lịch, ghế trống tick sau là ngồi ngay (không “nuốt” 15s).
-            # no_dish / đã ngồi: mới cộng interval.
+            # TICKET-02 1.3: lượt khách ở tick first + interval·k, "nếu có bàn trống".
+            # Đến mốc mà bàn đầy thì bỏ lượt (không dồn lịch); no_dish cũng tiêu lượt.
             interval_ticks = max(1, int(round(self.t["customer_interval_s"] * TICK)))
-            while self._elapsed_ticks >= self._next_customer_tick:
-                empty = any(
-                    not any(c.get("table_id") == tb["id"] for c in self.customers)
-                    for tb in self.tables
-                )
-                if not empty:
-                    break
-                before = len(events)
-                events.extend(self._seat_scheduled_customer())
-                seated = any(e[0] == "customer_arrived" for e in events[before:])
-                self._next_customer_tick += interval_ticks
-                if not seated:
-                    break  # no_dish — tránh spam mỗi tick
+            events.extend(self._seat_scheduled_customer())
+            self._next_customer_tick += interval_ticks
         return events
 
     def _usable_items(self, exclude_ids=None):
