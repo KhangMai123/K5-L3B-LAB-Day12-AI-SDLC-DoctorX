@@ -419,7 +419,8 @@ class GatherSim:
                 h = self.hold.pop()
                 lost.append({"id": h["id"], "kind": h["kind"], "fresh": h["fresh"]})
         self.invuln_ticks = int(self.t["monsters"]["invuln_ticks"])
-        rdx, rdy = _unit(self.pos[0] - m["pos"][0], self.pos[1] - m["pos"][1])
+        # TICKET-02 1.2: lùi theo hướng XA người chơi (quái − người chơi), chốt lúc chạm; trùng tâm dùng +x
+        rdx, rdy = _unit(m["pos"][0] - self.pos[0], m["pos"][1] - self.pos[1])
         if math.hypot(self.pos[0] - m["pos"][0], self.pos[1] - m["pos"][1]) <= 1e-12:
             rdx, rdy = 1.0, 0.0
         m["state"] = "recoil"
