@@ -116,7 +116,8 @@ class GatherLat2(unittest.TestCase):
                     self.assertEqual(data_for(ev, "gather")[0]["amount"], 2)
                 else:
                     self.assertEqual(names(ev), ["hold_full"])
-                    self.assertEqual(data_for(ev, "hold_full"), [{"required": 2, "free": 1}])
+                    self.assertEqual(data_for(ev, "hold_full"),
+                                     [{"action": "gather", "node_id": "N1", "required": 2, "free": 1}])
                     self.assertEqual(sim.hold, initial_hold)
                     self.assertEqual(sim.nodes, before_nodes)
                     self.assertEqual(sim.catch_cd_ticks, 0)
@@ -188,7 +189,8 @@ class GatherLat2(unittest.TestCase):
         before_fish, before_hold = copy.deepcopy(sim.fish), list(sim.hold)
         ev = press(sim, catch=True)
         self.assertEqual(names(ev), ["hold_full"])
-        self.assertEqual(data_for(ev, "hold_full"), [{"required": 3, "free": 1}])
+        self.assertEqual(data_for(ev, "hold_full"),
+                         [{"action": "catch", "fish_id": "F10", "required": 3, "free": 1}])
         self.assertEqual(sim.fish, before_fish)
         self.assertEqual(sim.hold, before_hold)
         self.assertEqual(sim.catch_cd_ticks, 0)

@@ -10,6 +10,8 @@ from chonoi.runner import Session
 T = load_contract()["tuning"]
 Q, MENU = T["quan"], T["menu"]
 STOVE, TABLE = Q["stoves"][0], Q["tables"][0]
+OTHER_TABLE = dict(TABLE, id="T2")
+TWO_TABLES = dict(T, quan=dict(Q, tables=[TABLE, OTHER_TABLE]))
 DISH = "ca_loc_nuong_trui"
 PRICE = MENU[DISH]["price"]
 COOK = round(MENU[DISH]["cook_s"] * 60)
@@ -29,9 +31,9 @@ def names(rows):
     return [r["name"] for r in rows]
 
 
-def quan(**block):
+def quan(tuning=T, **block):
     block.setdefault("random_customers", False)
-    return Session("quan", T, block, 1)
+    return Session("quan", tuning, block, 1)
 
 
 def waiting_customer(**kw):
@@ -46,14 +48,21 @@ class Lat4(unittest.TestCase):
                  tables=[], customers=[waiting_customer()])
         rows = s.step(press())
         self.assertEqual(names(rows), ["cook_started"])
-        self.assertEqual(rows[0]["data"], {"stove_id": STOVE["id"], "customer_id": "C1", "dish_id": DISH})
+        self.assertEqual(rows[0]["data"], {"stove_id": STOVE["id"], "order_id": "C1", "dish_id": DISH,
+                                          "items": ["ca_loc"], "base_price": PRICE})
         snap = s.snapshot()
         st = snap["stoves"][0]
         self.assertEqual((st["state"], st["dish"], st["cook_ticks_left"]),
-                         ("cooking", {"dish_id": DISH, "order_id": "C1"}, COOK))
+                         ("cooking", {"dish_id": DISH, "order_id": "C1", "base_price": PRICE}, COOK))
         c = snap["customers"][0]
         self.assertEqual((c["order_status"], c["reserved"]), ("assigned", {}))
         self.assertEqual(snap["stock"], {"ca_loc": 1})  # 2 - 1 đã nấu, không còn giữ chỗ
+
+    def test_cook_breaks_order_tick_tie_by_table_id(self):
+        s = quan(TWO_TABLES, stock={"ca_loc": 2}, player={"pos": STOVE["pos"]},
+                 customers=[waiting_customer(table_id=OTHER_TABLE["id"]),
+                            waiting_customer(id="C2")])
+        self.assertEqual(s.step(press())[0]["data"]["order_id"], "C2")
 
     def test_stove_idle_without_order_does_nothing(self):
         s = quan(stock={"ca_loc": 1}, player={"pos": STOVE["pos"]})
@@ -68,20 +77,24 @@ class Lat4(unittest.TestCase):
         rows = s.step(idle())
         self.assertEqual(rows[0]["name"], "dish_ready")
         self.assertEqual(rows[0]["tick"], 1 + COOK)
+        self.assertEqual(rows[0]["data"], {"stove_id": STOVE["id"], "order_id": "C1", "dish_id": DISH})
         self.assertEqual(s.snapshot()["stoves"][0]["state"], "ready")
 
     def test_pick_respects_carry_limit(self):
-        stove = {"id": STOVE["id"], "state": "ready", "dish": {"dish_id": DISH, "order_id": "C1"}}
+        stove = {"id": STOVE["id"], "state": "ready",
+                 "dish": {"dish_id": DISH, "order_id": "C1", "base_price": PRICE}}
         s = quan(player={"pos": STOVE["pos"]}, stoves=[stove],
                  customers=[waiting_customer(order_status="assigned")])
         rows = s.step(press())
         self.assertEqual(names(rows), ["dish_picked"])
+        self.assertEqual(rows[0]["data"], {"stove_id": STOVE["id"], "order_id": "C1", "dish_id": DISH})
         self.assertEqual(s.snapshot()["hand"], {"order_id": "C1", "dish_id": DISH, "base_price": PRICE})
         self.assertEqual(s.snapshot()["stoves"][0]["state"], "idle")
         # tay đã cầm món -> bếp chín thứ hai không bưng được
-        s2 = quan(player={"pos": STOVE["pos"]}, stoves=[stove],
-                  hand={"order_id": "C1", "dish_id": DISH, "base_price": PRICE},
-                  customers=[waiting_customer(order_status="assigned")])
+        s2 = quan(TWO_TABLES, player={"pos": STOVE["pos"]}, stoves=[stove],
+                  hand={"order_id": "C2", "dish_id": DISH, "base_price": PRICE},
+                  customers=[waiting_customer(order_status="assigned"),
+                             waiting_customer(id="C2", table_id=OTHER_TABLE["id"], order_status="assigned")])
         self.assertEqual(s2.step(press()), [])
 
     def test_serve_with_tip_then_pay(self):
@@ -90,7 +103,8 @@ class Lat4(unittest.TestCase):
         rows = s.step(press())
         tip = math.floor(PRICE * Q["tip_rate"])
         self.assertEqual(names(rows), ["served"])
-        self.assertEqual(rows[0]["data"], {"customer_id": "C1", "table_id": TABLE["id"], "dish_id": DISH, "tip": tip})
+        self.assertEqual(rows[0]["data"], {"order_id": "C1", "table_id": TABLE["id"], "dish_id": DISH,
+                                          "patience_ticks_left": PATIENCE - 1, "base_price": PRICE, "tip": tip})
         snap = s.snapshot()
         self.assertIsNone(snap["hand"])
         self.assertEqual(snap["customers"][0]["state"], "eating")
@@ -99,10 +113,11 @@ class Lat4(unittest.TestCase):
         rows = s.step(idle())
         self.assertEqual(names(rows), ["paid"])
         rep = min(Q["reputation_max"], Q["reputation_initial"] + Q["tip_reputation"])
-        self.assertEqual(rows[0]["data"], {"customer_id": "C1", "table_id": TABLE["id"], "amount": PRICE + tip,
-                                           "tip": tip, "money": PRICE + tip, "reputation": rep})
+        self.assertEqual(rows[0]["data"], {"order_id": "C1", "table_id": TABLE["id"], "base_price": PRICE,
+                                          "tip": tip, "amount": PRICE + tip, "reason": "finished_eating"})
         snap = s.snapshot()
         self.assertEqual((snap["money"], snap["earned"], snap["customers"]), (PRICE + tip, PRICE + tip, []))
+        self.assertEqual(snap["reputation"], rep)
         self.assertIsNone(snap["tables"][0]["customer_id"])
 
     def test_no_tip_below_patience_ratio(self):
@@ -121,15 +136,17 @@ class Lat4(unittest.TestCase):
                  customers=[waiting_customer(state="eating", order_status="served", base_price=PRICE,
                                              tip=1, eat_ticks_left=1)])
         rows = s.step(idle())
-        self.assertEqual(rows[0]["data"]["reputation"], Q["reputation_max"])
+        self.assertEqual(names(rows), ["paid"])
+        self.assertEqual(s.snapshot()["reputation"], Q["reputation_max"])
 
     def test_customer_left_cancels_dish_on_stove(self):
-        stove = {"id": STOVE["id"], "state": "cooking", "dish": {"dish_id": DISH, "order_id": "C1"},
+        stove = {"id": STOVE["id"], "state": "cooking",
+                 "dish": {"dish_id": DISH, "order_id": "C1", "base_price": PRICE},
                  "cook_ticks_left": 100}
         s = quan(stoves=[stove], customers=[waiting_customer(order_status="assigned", patience_ticks_left=1)])
         rows = s.step(idle())
         left = [r["data"] for r in rows if r["name"] == "customer_left"]
-        self.assertEqual(left, [{"customer_id": "C1", "table_id": TABLE["id"], "reason": "patience",
+        self.assertEqual(left, [{"order_id": "C1", "table_id": TABLE["id"], "reason": "patience",
                                  "reputation": Q["reputation_initial"] + Q["left_reputation_delta"]}])
         st = s.snapshot()["stoves"][0]
         self.assertEqual((st["state"], st["dish"]), ("idle", None))

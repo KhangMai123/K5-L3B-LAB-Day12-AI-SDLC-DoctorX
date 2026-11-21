@@ -1,0 +1,12 @@
+dock.json: {"gather":{"hold":["ca_loc","bong_sung","bong_sung"]}}
+dock-inputs.json: {"frames":[{"tick":0,"interact":true}]}
+python -m chonoi.headless --mode gather --seed 42 --scenario dock.json --inputs dock-inputs.json --ticks 1 --out gather.jsonl --inventory-out catch.json
+python -m chonoi.headless --mode quan --seed 42 --inventory catch.json --ticks 0 --out quan.jsonl
+gather_exit=0; quan_exit=0
+catch.json: {"items":{"bong_sung":2,"ca_loc":1}}
+gather_end: {"type":"event","tick":1,"phase":"gather","name":"gather_end","data":{"reason":"docked","inventory":{"items":{"bong_sung":2,"ca_loc":1}}}}
+quan snapshot tick 0 stock: {"bong_sung":2,"ca_loc":1}
+Repeated both commands into separate outputs. Byte-for-byte equality:
+gather.jsonl SHA-256 6bc3a907bb1c941be656463f91009d0644398b32057bef98ba04103b2eaed8f9
+quan.jsonl SHA-256 e4d852552c5414a2aa58686488a8790b96728f50c251863ade23520a01fc71d3
+catch.json SHA-256 b6bb9d2da81ecee69d01fd0860cef1b54edfcb140409c250b4ec3ba1e4410b65

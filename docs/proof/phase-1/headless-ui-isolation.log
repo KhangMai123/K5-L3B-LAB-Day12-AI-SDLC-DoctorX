@@ -1,0 +1,7 @@
+Inputs (in.json): {"frames":[{"tick":0,"move":[1,1]},{"tick":90,"move":[-1,0]},{"tick":200,"move":[0,-1],"interact":true}]}
+python -m chonoi.headless --mode gather --seed 7 --ticks 600 --inputs in.json --out g.jsonl
+python -m chonoi.headless --mode quan --seed 7 --ticks 600 --out q.jsonl
+Reproduced mo-rong-1-headless.txt: c7b1da4 and c14a6ce match byte-for-byte and match its recorded SHA-256.
+Phase 1 integration: full source and temporary source copy without chonoi/web match byte-for-byte.
+gather SHA-256 ff0f9a1b0b7329d6d85db96f33031b3832e1a8cc21093e1ea522f9a2ebd2e910
+quan SHA-256 f17c65aac03a7aec5a395e36c7e4a2abb299028e12e64ec38a6c2af642994c4d
