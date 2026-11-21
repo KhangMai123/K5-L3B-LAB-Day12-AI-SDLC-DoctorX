@@ -7,7 +7,7 @@
   "headless_cmd": "python3 -m chonoi.headless",
   "bench_cmd": "python3 -m chonoi.bench",
   "soak_cmd": "python3 -m chonoi.soak",
-  "extensions": ["burn", "net"],
+  "extensions": ["burn", "net", "leaderboard"],
   "tuning": {
     "tick_hz": 60,
     "gather": {

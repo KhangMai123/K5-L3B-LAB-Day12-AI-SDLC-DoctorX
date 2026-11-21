@@ -1,9 +1,11 @@
 """Điểm vào headless: python3 -m chonoi.headless --mode gather|quan|day ..."""
 
 import argparse
+import math
 import os
 import sys
 
+from . import leaderboard
 from .contract import load_contract
 from .errors import BadInput
 from .inputs import load_frames
@@ -40,6 +42,9 @@ def main(argv=None) -> int:
     p.add_argument("--inventory-out", dest="inventory_out")
     p.add_argument("--days", type=_int("days"), default=1)
     p.add_argument("--snapshot-every", dest="snapshot_every", type=_int("snapshot-every"), default=10)
+    # mở rộng leaderboard: cặp cờ chỉ dùng với day
+    p.add_argument("--leaderboard")
+    p.add_argument("--player-name", dest="player_name")
     a = p.parse_args(argv)
     try:
         if a.ticks < 0:
@@ -58,7 +63,14 @@ def main(argv=None) -> int:
             raise BadInput("--inventory chỉ dùng với quan")
         if a.inventory_out and a.mode != "gather":
             raise BadInput("--inventory-out chỉ dùng với gather")
-        outs = [x for x in (a.out, a.inventory_out) if x]
+        if (a.leaderboard is None) != (a.player_name is None):
+            raise BadInput("--leaderboard và --player-name phải đi cùng nhau")
+        if a.leaderboard is not None:
+            if a.mode != "day":
+                raise BadInput("--leaderboard chỉ dùng với --mode day")
+            leaderboard.validate_name(a.player_name)
+            leaderboard.load(a.leaderboard)  # store hỏng -> mã 2 trước khi chạy
+        outs = [x for x in (a.out, a.inventory_out, a.leaderboard) if x]
         ins = [x for x in (a.scenario, a.inputs, a.inventory) if x]
         paths = [os.path.abspath(x) for x in outs + ins]
         if len(set(paths)) != len(paths):
@@ -74,8 +86,15 @@ def main(argv=None) -> int:
         sys.stderr.write(f"đầu vào sai: {e}\n")
         return 2
     try:
-        run(a.mode, tuning, scenario, a.seed, frames, a.ticks, a.out, a.snapshot_every,
-            inventory=inventory, inventory_out=a.inventory_out, days=a.days)
+        sim = run(a.mode, tuning, scenario, a.seed, frames, a.ticks, a.out, a.snapshot_every,
+                  inventory=inventory, inventory_out=a.inventory_out, days=a.days)
+        # Ghi đúng một mục khi chạy đủ 5 Ngày chuẩn, không scenario, reason days_complete.
+        if (a.leaderboard and a.days == 5 and a.scenario is None and sim.done
+                and sim.reason == "days_complete"):
+            mult = tuning["score"]["reputation_multiplier"]
+            score = sim.earned + mult * math.floor(sim.reputation)
+            leaderboard.record(a.leaderboard, a.player_name, score,
+                               getattr(sim, "days_completed", a.days), a.seed)
     except BadInput as e:
         sys.stderr.write(f"đầu vào sai: {e}\n")
         return 2

@@ -247,7 +247,21 @@ def main(argv=None) -> int:
     p.add_argument("--scenario")
     p.add_argument("--inventory", help="chỉ với quan: nạp kho từ file")
     p.add_argument("--inventory-out", dest="inventory_out", help="chỉ với gather: ghi kho khi kết thúc buổi")
+    p.add_argument("--export-leaderboard", dest="export_leaderboard",
+                   help="mở rộng leaderboard: xuất bảng xếp hạng đã sắp ra file rồi thoát")
+    p.add_argument("--leaderboard", help="store xếp hạng (mặc định trong thư mục người dùng)")
     a = p.parse_args(argv)
+    if a.export_leaderboard:
+        from . import leaderboard
+        try:
+            leaderboard.export(a.export_leaderboard, a.leaderboard or leaderboard.DEFAULT_STORE)
+        except BadInput as e:
+            sys.stderr.write(f"đầu vào sai: {e}\n")
+            return 2
+        except OSError as e:
+            sys.stderr.write(f"lỗi ghi: {e}\n")
+            return 1
+        return 0
     try:
         if a.mode == "day":
             if not (1 <= a.days <= 5):
