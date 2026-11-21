@@ -13,7 +13,25 @@ Nguồn: bộ "Fish" (21 hình) tải từ clker.com, danh sách link gốc nằ
 | `oc.png` | `13280382821221522943Snail Shell.svg.thumb.png` | (không ghi) | vỏ ốc đáy sông |
 | `rua.png` | `11949837491674168150turtle_jurgen_gaeremyn_01.svg.med.png` | Jurgen Gaeremyn | rùa bơi ở đáy |
 
+### Nhân vật quán (Phase 2, nhánh `p2/asset`)
+
+| File | Kích thước | Dùng làm | Nguồn |
+|---|---|---|---|
+| `customer_wait.png` | 256×256 | khách đang chờ (bong bóng đồng hồ) | Nhài cung cấp |
+| `customer_eat.png` | 256×256 | khách đang ăn | Nhài cung cấp |
+| `customer_angry.png` | 256×256 | khách mất kiên nhẫn | Nhài cung cấp |
+| `ut_sen_top.png` | 256×256 | Út Sen bưng khay | Nhài cung cấp |
+| `warn_customer.png` | 128×128 | icon cảnh báo khách sắp bỏ đi | Nhài cung cấp |
+
+> **Cần bổ sung trước khi gộp:** công cụ hoặc trang đã tạo/tải 5 ảnh này, và giấy phép (CC0/CC-BY/MIT hoặc nhóm tự tạo).
+>
+> Xử lý của nhóm: ảnh gốc là ảnh chụp màn hình có nền ô caro in sẵn. Nhóm đã xóa nền bằng flood-fill từ mép, bỏ mảnh vụn và viền khung, cắt sát, rồi đưa về khung vuông trong suốt.
+
 Các hình còn lại (nhà sàn, Út Sen, Má Tư, bông súng, bông điên điển, bếp, bàn, đèn dây) do nhóm tự vẽ bằng canvas trong `chonoi/web/index.html`.
+
+## Shop cuối ngày
+
+`shop_bg.png`, `upgrade_oxygen_1.png`, `upgrade_oxygen_2.png`, `upgrade_hp_1.png`, `upgrade_hp_2.png`, `btn_buy.png`, `btn_done.png` và `icon_money.png` là hình tạo bằng OpenAI ImageGen cho quầy Má Tư. Các PNG vật phẩm, nút và icon tiền có nền trong suốt. Chữ nút và đơn vị tiền được hiển thị bằng UI.
 
 ## Công cụ AI
 - Claude Code (Claude Opus 5.5): HUD, đồ họa vector, thoại Má Tư; chi tiết ở `docs/ai-usage-log.md`.
