@@ -61,6 +61,7 @@ addEventListener("keydown", (e) => {
   else if (k === " ") { down.add("catch"); e.preventDefault(); }
   else if (k === "r") { fetch("/restart", { method: "POST" }); lastSent = ""; down.clear(); }
   else if (k === "l") showLog = !showLog;
+  else if (k === "m") { maOn = !maOn; maLine = null; }
   pushInput();
 });
 addEventListener("keyup", (e) => {
@@ -150,6 +151,91 @@ function eventText(e) {
     case "quan_end": return { t: "Hết ca, dọn quán", c: "#fff3c4" };
     default: return { t: e.name, c: "#e0e0e0" };
   }
+}
+
+// ---------- MỞ RỘNG #1: Lời Má Tư (chỉ ở client, headless không có) ----------
+// Má Tư nói giọng Nam Bộ theo sự kiện trong snapshot. Không gửi gì vào sim, không dùng RNG của sim:
+// câu thoại chọn theo tick (tất định) nên không ảnh hưởng tick/sự kiện/tiền/uy tín. Phím M bật/tắt.
+let maOn = true, maLine = null, maSeen = -1, maIntro = false, lastTick = -1;
+const MA = {
+  intro_gather: ["Út ơi, má đau lưng quá, bữa nay con lặn giùm má nghen. Hái bông điên điển, bông súng trên mặt sông, lặn xuống bắt cá linh, cá lóc. Coi chừng hết hơi nghen con!"],
+  intro_quan: ["Tối rồi đó Út, đèn treo lên rồi, khách sắp tới. Nấu cho kịp, bưng cho lẹ, đừng để người ta chờ lâu nghen!"],
+  dive: ["Lặn từ từ thôi con, nhớ để dành hơi."],
+  oxygen_empty: ["Trời đất ơi, hết hơi rồi! Trồi lên lẹ đi con!", "Út! Lên thở cái đã, cá đâu có chạy mất!"],
+  choke: ["Sặc nước rồi kìa! Lên mặt nước liền đi con!", "Má lo quá, lên thở đi Út ơi!"],
+  faint: ["Thôi chết, con xỉu rồi! Giỏ trôi mất tiêu… không sao, con khỏe là má mừng."],
+  hold_full: ["Giỏ đầy nhóc rồi, về bến cất đi con.", "Hết chỗ chứa rồi Út, đừng ham quá nghen."],
+  gather_bong_dien_dien: ["Bông điên điển vàng ươm, đẹp quá trời!", "Điên điển này nấu lẩu cá linh là hết sẩy."],
+  gather_bong_sung: ["Bông súng non, trộn gỏi là bắt cơm lắm nghen.", "Bông súng tươi rói, khách ưng lắm đó."],
+  fish_ca_linh: ["Cá linh mùa nước nổi, béo mầm!", "Một bầy cá linh luôn, giỏi quá con!"],
+  fish_ca_loc: ["Con cá lóc bự chà bá! Tối nướng trui thơm phức.", "Cá lóc đồng đó, khách mê lắm."],
+  end_docked: ["Giỏi quá con gái má! Về nghỉ chút rồi tối mình mở quán."],
+  end_time: ["Trưa trờ trưa trật rồi, về thôi con, đồ trong giỏ má cất cho."],
+  end_fainted: ["Thôi bữa nay vậy được rồi, về má xức dầu cho."],
+  customer_arrived: ["Có khách tới kìa Út, ra chào người ta đi con!", "Khách vô rồi, lẹ tay lên nghen."],
+  no_dish: ["Kho hết đồ rồi, khách ngồi chơi uống nước trà vậy."],
+  cook_started: ["Lửa vừa thôi nghen, đừng để khét."],
+  dish_ready: ["Chín rồi đó, bưng ra cho nóng!", "Thơm lừng luôn, bưng lẹ đi con!"],
+  served: ["Dọn món rồi, chúc khách ăn ngon miệng!"],
+  served_tip: ["Khách khen ngon, còn boa thêm nữa nè!", "Được boa rồi, quán mình có tiếng rồi đó!"],
+  customer_left: ["Trời, khách bỏ về rồi… lần sau mình làm lẹ tay hơn nghen."],
+  quan_end_good: ["Dọn hàng thôi con. Bữa nay đắt hàng, má mừng quá!"],
+  quan_end: ["Dọn hàng thôi con, mai mình làm tiếp."],
+};
+// độ ưu tiên khi nhiều sự kiện cùng lúc: chuyện gấp nói trước
+const MA_PRIO = { faint: 9, gather_end: 8, quan_end: 8, choke: 7, oxygen_empty: 6, customer_left: 6, hold_full: 5,
+                  dish_ready: 4, served: 4, customer_arrived: 4, no_dish: 3, fish_caught: 3, gather: 2, cook_started: 1, dive: 1 };
+const pick = (key, n) => { const a = MA[key]; return a ? a[Math.abs(n) % a.length] : null; };
+function maKey(e) {
+  const d = e.data || {};
+  switch (e.name) {
+    case "gather": return "gather_" + d.kind;
+    case "fish_caught": return "fish_" + d.kind;
+    case "gather_end": return "end_" + d.reason;
+    case "served": return d.tip > 0 ? "served_tip" : "served";
+    case "customer_left": return d.reason === "patience" ? "customer_left" : null;
+    case "quan_end": return (snap.earned || 0) > 0 ? "quan_end_good" : "quan_end";
+    default: return e.name;
+  }
+}
+function updateMa() {
+  if (!snap || snap.tick === undefined) return;
+  if (snap.tick < lastTick) { maSeen = -1; maLine = null; maIntro = false; }  // chơi lại
+  lastTick = snap.tick;
+  if (!maOn) return;
+  if (!maIntro && snap.tick < 300) { maIntro = true; maLine = { t: pick("intro_" + snap.mode, 0), p: 5, until: snap.tick + 420 }; }  // chỉ chuyện gấp mới cắt lời mở đầu
+  let best = null;
+  (snap.events || []).forEach((e) => {
+    if (e.tick <= maSeen) return;
+    const key = maKey(e), p = MA_PRIO[e.name] || 0;
+    if (key && MA[key] && (!best || p >= best.p)) best = { p, t: pick(key, e.tick), tick: e.tick };
+  });
+  (snap.events || []).forEach((e) => (maSeen = Math.max(maSeen, e.tick)));
+  if (best && (!maLine || best.p >= (maLine.p || 0) || snap.tick > maLine.until)) maLine = { t: best.t, p: best.p, until: best.tick + 270 };
+  if (maLine && snap.tick > maLine.until && !snap.finished) maLine = null;
+}
+function wrap(s, maxW, size) {
+  ctx.font = size + "px system-ui, sans-serif";
+  const out = []; let cur = "";
+  s.split(" ").forEach((wd) => { const tr = cur ? cur + " " + wd : wd; if (ctx.measureText(tr).width > maxW && cur) { out.push(cur); cur = wd; } else cur = tr; });
+  if (cur) out.push(cur);
+  return out;
+}
+function drawMa(x, yBottom, maxW) {
+  if (!maOn || !maLine || !maLine.t) return;
+  const lines = wrap(maLine.t, maxW - 92, 14), bh = Math.max(64, 30 + lines.length * 19), y = yBottom - bh;
+  rrect(x, y, maxW, bh, 12, "rgba(255,248,230,.96)");
+  // chân dung Má Tư: tóc búi bạc, khăn rằn
+  const cx = x + 38, cy = y + 36;
+  circle(cx, cy + 2, 22, "#7b5a3c");
+  circle(cx, cy - 2, 17, "#f0c79c");
+  circle(cx, cy - 20, 9, "#cfcfcf");
+  ctx.fillStyle = "#b71c1c"; ctx.fillRect(cx - 18, cy - 14, 36, 6);
+  ctx.fillStyle = "#fff"; for (let i = 0; i < 6; i++) ctx.fillRect(cx - 16 + i * 6, cy - 14, 2, 6);
+  ctx.fillStyle = "#3b2410"; ctx.fillRect(cx - 7, cy - 4, 3, 3); ctx.fillRect(cx + 4, cy - 4, 3, 3);
+  ctx.strokeStyle = "#8d4b2a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy + 4, 6, .2, Math.PI - .2); ctx.stroke();
+  text("Má Tư", x + 76, y + 22, { size: 13, bold: true, color: "#8d4b2a" });
+  lines.forEach((ln, i) => text(ln, x + 76, y + 42 + i * 19, { size: 14, color: "#3b2410" }));
 }
 
 // ---------- vẽ: tiện ích ----------
@@ -401,7 +487,7 @@ function drawGather(w, h) {
     text(`Giỏ ${snap.hold.length}/${cap}` + (full ? " (ĐẦY)" : "") + "   " + (countItems(names) || "trống"), 14, y0 + sz + 22,
          { size: 13, bold: full, color: full ? "#ffcc80" : "#f3ead8" });
   }
-  text("WASD bơi · E hái / cập bến · Space bắt cá · R chơi lại · L nhật ký", w - 12, h - 14, { size: 12, align: "right", color: "#bfa98a" });
+  text("WASD bơi · E hái / cập bến · Space bắt cá · R chơi lại · M Má Tư · L nhật ký", w - 12, h - 14, { size: 12, align: "right", color: "#bfa98a" });
   prompt(gatherPrompt(meta, p), w, h - bottom - 26);
   toasts(w, 74);
 }
@@ -530,7 +616,7 @@ function drawQuan(w, h) {
   text(stars + "  " + rep.toFixed(1), 260, 48, { size: 18, color: "#ffd166" });
   text(`Điểm ${snap.score ?? 0}`, 440, 44, { size: 18, bold: true });
   drawQuanPanel(areaW, panelW, h, meta);
-  text("WASD đi · E nấu / bưng / dọn · R chơi lại · L nhật ký", areaW - 12, h - 14, { size: 12, align: "right", color: "#bfa98a" });
+  text("WASD đi · E nấu / bưng / dọn · R chơi lại · M Má Tư · L nhật ký", areaW - 12, h - 14, { size: 12, align: "right", color: "#bfa98a" });
   prompt(quanPrompt(meta, p), areaW, h - bottom - 24);
   toasts(areaW, 74);
 }
@@ -588,9 +674,14 @@ function frame() {
   const [w, h] = fit();
   ctx.fillStyle = "#10161c"; ctx.fillRect(0, 0, w, h);
   if (snap) {
+    updateMa();
     if (snap.mode === "quan") drawQuan(w, h); else drawGather(w, h);
     rawLog(w, h);
     overlay(w, h);
+    const areaW = snap.mode === "quan" ? w - Math.max(240, Math.min(340, w * .3)) : w;
+    // góc dưới trái, trên dải HUD dưới và chừa chỗ cho gợi ý phím; màn kết thúc thì đặt dưới khung tổng kết
+    const yb = snap.finished ? Math.min(h - 10, h / 2 + 190) : h - (snap.mode === "quan" ? 40 : 78) - 48;
+    drawMa(12, yb, Math.min(460, areaW - 24));
   } else {
     text(offline ? "Không kết nối được máy chủ…" : "Đang tải…", w / 2, h / 2, { align: "center", size: 18 });
   }
