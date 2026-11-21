@@ -10,8 +10,6 @@
 - **AI sai ở đâu và tôi phát hiện thế nào:**
   - AI chạy test bằng `python3` trên Windows, báo 20 lỗi giả; đọc log thì thấy lỗi do môi trường, không phải do code.
   - AI tự thêm dòng đồng tác giả Claude vào commit; tôi thấy trên GitHub và yêu cầu bỏ.
-  - Snapshot chụp bị dính tham chiếu nên ảnh "đang nấu" lại hiện khách "đang ăn"; tôi phát hiện khi so với số in ra.
-  - Chạy với số thật mới lộ gợi ý sai lúc đang bưng món.
-- **Điều tôi học được:**
-  - UI chỉ đọc snapshot thì sáng tạo thoải mái mà không phá headless; so mã băm output là bằng chứng gọn.
-  - Chốt tên trường sớm giúp HUD khớp ngay khi các lát gộp.
+  - Ảnh chụp "đang nấu" hiện khách "đang ăn" do snapshot dính tham chiếu; tôi so với số in ra thì thấy.
+  - Chạy số thật mới lộ gợi ý sai lúc đang bưng món.
+- **Điều tôi học được:** UI chỉ đọc snapshot thì sáng tạo thoải mái mà không phá headless; chốt tên trường sớm giúp HUD khớp ngay khi gộp.
