@@ -1,10 +1,6 @@
-# trdphat — Phát, Lát 2 Phase 1
+# trdphat — phản tư cá nhân (≤ 200 từ)
 
-Bản nháp kỹ thuật từ phiên làm việc với Codex; Phát bổ sung phản tư cá nhân và link commit sau khi đọc lại.
-
-- Đã làm: hái nút ready gần nhất, mọc lại, bắt đàn cá gần nhất, yield/cooldown từ tuning, giỏ nguyên khối qua API của Hưng; giữ ưu tiên cập bến và dùng runner xuất kho.
-- Kiểm chứng: `tests/test_gather_lat2.py`, `tests/test_gather_lat2_inventory.py`; fixture hái/bắt rồi cập bến ở `tests/fixtures/gather_lat2/`; kết quả thật ở `docs/proof/phase-1/lat2-phat/`.
-- Review: agent đã đọc chéo implementation; còn chờ Hưng review theo cặp dự phòng trước khi đẩy.
-- Payload sự kiện đã khớp hợp đồng mới trên main; còn chờ xác nhận cooldown khi bắt hụt/đầy giỏ, xem `docs/clarify.md`.
-- Phản tư cá nhân / bài học: Phát tự bổ sung sau khi review và chơi thử.
-- **P2–P4 (từ git log):** chưa có commit trên `main` sau Phase 1. Việc nhận ở P4: thử clone sạch trên macOS/Linux (`TEAM.md`). *Tự điền khi làm.*
+- **Tôi đã làm:** Phụ trách Lát 2: hái, tái sinh, bắt cá, hồi chiêu, ưu tiên cập bến; viết 20 test luật, 2 test kho và fixture chuyển kho sang Quán. Nhánh bàn giao đạt 71/71 test, PR #3 đã gộp. [Code](https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX/commit/5b13688) · [Test/kho](https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX/commit/dfe61b7) · [Tài liệu](https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX/commit/9dea4f3).
+- **Tôi đã review / đã giúp:** Đối chiếu API giỏ của Hưng khi ghép hái/bắt; kiểm kho xuất/nhập giúp Minh/Diệp nối hai buổi. Hưng đọc chéo Lát 2 trước khi gộp P1. [API giỏ](https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX/commit/8d0556b) · [Phối hợp](https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX/blob/1883f9c/docs/members/danialtranz.md).
+- **AI sai ở đâu và tôi phát hiện thế nào:** AI suy đoán payload sự kiện chưa đúng. Đối chiếu hợp đồng, tôi đồng bộ khi ghép main; QA sau đó phát hiện `hold_full` thiếu hành động và id đích, sửa ở [754e91c](https://github.com/KhangMai123/K5-L3B-LAB-Day12-AI-SDLC-DoctorX/commit/754e91c).
+- **Điều tôi học được:** Test xanh chưa bảo đảm đủ yêu cầu. Cần chốt API, đọc PRD, kiểm thứ tự tick và smoke kho qua hai tiến trình. Lần sau tôi chia PR nhỏ và lưu bằng chứng sớm. Phần kiểm clone sạch macOS/Linux được giao ở P4 còn chưa có bằng chứng.
